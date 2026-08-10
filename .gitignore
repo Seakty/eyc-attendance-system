@@ -1,0 +1,27 @@
+﻿# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build/output
+dist/
+build/
+
+# Editor configs
+.vscode/
+.idea/
+
+# Uploaded/exported files (adjust as needed)
+uploads/
+exports/
+*.xlsx
