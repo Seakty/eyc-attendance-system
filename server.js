@@ -4,6 +4,7 @@ require("dotenv").config();
 // Import database and utilities
 const db = require("./config/database");
 const { isWithinGeofence } = require("./utils/geofence");
+const miniappRoutes = require("./routes/miniapp");   // <-- ADD THIS
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use("/api/attendance", miniappRoutes);            // <-- ADD THIS
 
 // Health-check route
 app.get("/api/health", (req, res) => {
