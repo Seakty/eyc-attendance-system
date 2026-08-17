@@ -33,7 +33,13 @@ async function initializeDatabase() {
     await connection.end();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Failed to initialize database:", error.message);
+    console.error("❌ Failed to initialize database:");
+    console.error("Error:", error);
+    console.error("Message:", error?.message);
+    console.error("Code:", error?.code);
+    console.error("Errno:", error?.errno);
+    console.error("SQL State:", error?.sqlState);
+    console.error("Stack:", error?.stack);
     process.exit(1);
   }
 }
