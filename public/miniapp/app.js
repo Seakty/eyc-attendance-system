@@ -8,6 +8,13 @@ const btnIcon = document.getElementById("btnIcon");
 const btnLabel = document.getElementById("btnLabel");
 
 const tg = window.Telegram?.WebApp;
+const token = localStorage.getItem("eyc_auth_token");
+
+if (!token) {
+  // If no token exists, kick them back to the login page
+  window.location.href = "/login";
+}
+
 if (tg) tg.ready();
 
 checkInBtn.addEventListener("click", handleCheckIn);
@@ -57,7 +64,8 @@ function fallbackToBrowserGeolocation(resolve, reject) {
         lng: position.coords.longitude,
       });
     },
-    () => reject(new Error("Location permission denied. Enable GPS to check in.")),
+    () =>
+      reject(new Error("Location permission denied. Enable GPS to check in.")),
     { enableHighAccuracy: true, timeout: 10000 },
   );
 }
