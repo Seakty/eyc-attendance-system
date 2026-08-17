@@ -33,10 +33,13 @@ async function handleCheckIn() {
   }
 }
 
-// --- Step A: get GPS coords (Telegram first, browser fallback) ---
 function getUserCoordinates() {
   return new Promise((resolve, reject) => {
-    if (tg?.LocationManager) {
+    // SMART CHECK: Are we actually inside the real Telegram app?
+    const isInsideTelegram = tg && tg.platform && tg.platform !== "unknown";
+
+    // If inside Telegram, use their super-fast native GPS
+    if (isInsideTelegram && tg.LocationManager) {
       tg.LocationManager.init(() => {
         tg.LocationManager.getLocation((data) => {
           if (data) {
@@ -48,6 +51,8 @@ function getUserCoordinates() {
       });
       return;
     }
+
+    // If in Chrome (testing) or Telegram fails, use standard browser GPS
     fallbackToBrowserGeolocation(resolve, reject);
   });
 }
