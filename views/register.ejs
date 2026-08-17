@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Staff Registration | EYC Attendance System</title>
 
+  <link rel="icon" type="image/png" href="/images/favicon.ico" />
+
   <!-- Tailwind CDN (no build step, matches admin portal stack) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -409,7 +411,7 @@
         if (!validate()) return;
 
         const payload = {
-          full_name: fields.fullName.value.trim(),
+          fullName: fields.fullName.value.trim(),
           position: fields.position.value.trim(),
           campus_id: fields.campus.value,
           phone: fields.phone.value.trim().replace(/\s+/g, ""),

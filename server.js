@@ -5,6 +5,8 @@ require("dotenv").config();
 const db = require("./config/database");
 const { isWithinGeofence } = require("./utils/geofence");
 const authRoutes = require("./routes/auth");
+const pageRoutes = require("./routes/pages");
+const attendanceRoutes = require("./routes/attendance");
 
 // Create the Express application
 const app = express();
@@ -27,15 +29,17 @@ app.use(express.urlencoded({ extended: true }));
 // from the "public" folder
 app.use(express.static("public"));
 
+app.set("view engine", "ejs");
+
 // ============================================================
 // API ROUTES
 // ============================================================
 
 // All authentication-related routes are handled by authRoutes.
-// For example:
-// POST /api/auth/register
-// POST /api/auth/login
 app.use("/api/auth", authRoutes);
+app.use("/api/attendance", attendanceRoutes);
+// View Routes (Returns HTML/EJS)
+app.use("/", pageRoutes);
 
 // ============================================================
 // HEALTH CHECK
@@ -48,60 +52,6 @@ app.get("/api/health", (req, res) => {
     status: "success",
     message: "EYC Attendance Server is running!",
   });
-});
-
-// ============================================================
-// TEST GEOFENCE ROUTE
-// ============================================================
-
-app.get("/api/test-geofence", async (req, res) => {
-  try {
-    const [rows] = await db.execute(
-      "SELECT name, school_lat, school_lng, gps_radius_meters FROM campuses WHERE id = 1",
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({
-        error: "Campus not found in database. Did you run the setup script?",
-      });
-    }
-
-    const campus = rows[0];
-    const schoolLat = parseFloat(campus.school_lat);
-    const schoolLng = parseFloat(campus.school_lng);
-    const radius = campus.gps_radius_meters;
-
-    const teacherLat = 11.5565;
-    const teacherLng = 104.9283;
-
-    const result = isWithinGeofence(
-      teacherLat,
-      teacherLng,
-      schoolLat,
-      schoolLng,
-      radius,
-    );
-
-    res.json({
-      status: "success",
-      campusTested: campus.name,
-      schoolLocation: {
-        lat: schoolLat,
-        lng: schoolLng,
-      },
-      teacherLocation: {
-        lat: teacherLat,
-        lng: teacherLng,
-      },
-      allowedRadiusMeters: radius,
-      geofenceResult: result,
-    });
-  } catch (error) {
-    console.error("Database query failed:", error);
-    res.status(500).json({
-      error: "Internal Server Error while querying campuses table",
-    });
-  }
 });
 
 // ============================================================
