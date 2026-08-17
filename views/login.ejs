@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | EYC Attendance System</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: "#112D4E",
+            calmblue: "#3F72AF",
+            iceblue: "#DBE2EF",
+            offwhite: "#F9F7F6",
+            accentOrange: "#F2994A",
+            accentGreen: "#6FCF97",
+            accentCoral: "#EB5757",
+          },
+
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
+
+    .field-error {
+      display: none;
+    }
+
+    .field-error.show {
+      display: block;
+    }
+
+    input.invalid {
+      border-color: #EB5757 !important;
+    }
+  </style>
+</head>
+
+<body class="bg-offwhite min-h-screen flex items-center justify-center px-4 py-10">
+
+  <div class="w-full max-w-md">
+
+    <!-- Logo & Branding -->
+    <div class="text-center mb-6">
+      <div class="flex justify-center mb-3">
+        <img
+          src="/images/eyc-logo.png"
+          alt="EYC — Empowering Youth in Cambodia"
+          class="h-16 sm:h-20 w-auto object-contain drop-shadow-sm"
+        />
+      </div>
+
+      <h1 class="text-navy text-xl sm:text-2xl font-bold">
+        Staff Login
+      </h1>
+
+      <p class="text-calmblue text-sm sm:text-base">
+        EYC Attendance System
+      </p>
+
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white border border-iceblue shadow-xl rounded-2xl p-6 sm:p-8">
+
+      <!-- General Error -->
+      <div
+        id="formError"
+        class="field-error mb-4 rounded-lg bg-accentCoral/10 border border-accentCoral text-accentCoral text-sm px-4 py-3"
+      ></div>
+
+      <form id="loginForm" novalidate class="space-y-5">
+
+        <!-- Phone Number -->
+        <div>
+
+          <label
+            for="phone"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            Phone Number
+            <span class="text-accentCoral">*</span>
+          </label>
+
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            autocomplete="tel"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            placeholder="012 345 678 or +855 12 345 678"
+          />
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="phone"
+          >
+            Enter a valid Cambodian phone number.
+          </p>
+
+        </div>
+
+        <!-- Password -->
+        <div>
+
+          <label
+            for="password"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            Password
+            <span class="text-accentCoral">*</span>
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            placeholder="Enter your password"
+          />
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="password"
+          >
+            Password is required.
+          </p>
+
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          id="submitBtn"
+          class="w-full bg-calmblue hover:bg-navy text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span id="submitText">
+            Login
+          </span>
+        </button>
+
+        <!-- Register Link -->
+        <p class="text-center text-sm text-gray-500">
+          Don't have an account?
+          <a
+            href="/register"
+            class="text-calmblue font-medium hover:text-navy hover:underline"
+          >
+            Register
+          </a>
+        </p>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-center text-xs text-gray-400 mt-6">
+      © <%= new Date().getFullYear() %>
+      Empowering Youth in Cambodia (EYC)
+    </p>
+
+  </div>
+
+  <script>
+    (function () {
+
+      const form = document.getElementById("loginForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      const formError = document.getElementById("formError");
+
+      // Cambodian phone number format
+      const PHONE_REGEX = /^(?:\+855|0)[1-9]\d{7,8}$/;
+
+      const fields = {
+        phone: document.getElementById("phone"),
+        password: document.getElementById("password"),
+      };
+
+      function setFieldError(key, show) {
+
+        const input = fields[key];
+
+        const msg = form.querySelector(
+          `[data-error-for="${key}"]`
+        );
+
+        if (show) {
+
+          input.classList.add("invalid");
+
+          if (msg) {
+            msg.classList.add("show");
+          }
+
+        } else {
+
+          input.classList.remove("invalid");
+
+          if (msg) {
+            msg.classList.remove("show");
+          }
+
+        }
+      }
+
+      function hideBanner() {
+        formError.classList.remove("show");
+      }
+
+      function validate() {
+
+        let valid = true;
+
+        const phone = fields.phone.value
+          .trim()
+          .replace(/\s+/g, "");
+
+        if (!PHONE_REGEX.test(phone)) {
+
+          setFieldError("phone", true);
+          valid = false;
+
+        } else {
+
+          setFieldError("phone", false);
+
+        }
+
+        if (!fields.password.value) {
+
+          setFieldError("password", true);
+          valid = false;
+
+        } else {
+
+          setFieldError("password", false);
+
+        }
+
+        return valid;
+      }
+
+      // Validate while typing
+      Object.keys(fields).forEach((key) => {
+
+        fields[key].addEventListener("input", () => {
+
+          hideBanner();
+          validate();
+
+        });
+
+      });
+
+      // Login
+      form.addEventListener("submit", async function (e) {
+
+        e.preventDefault();
+
+        hideBanner();
+
+        if (!validate()) {
+          return;
+        }
+
+        const payload = {
+          phone: fields.phone.value
+            .trim()
+            .replace(/\s+/g, ""),
+
+          password: fields.password.value,
+        };
+
+        submitBtn.disabled = true;
+
+        submitText.textContent = "Logging in...";
+
+        try {
+
+          const res = await fetch("/api/auth/login", {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(payload),
+
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+
+            formError.textContent =
+              data.message ||
+              "Invalid phone number or password.";
+
+            formError.classList.add("show");
+
+            return;
+          }
+
+          window.location.href =
+            data.redirect || "/dashboard";
+
+        } catch (err) {
+
+          formError.textContent =
+            "Could not reach the server. Check your connection.";
+
+          formError.classList.add("show");
+
+        } finally {
+
+          submitBtn.disabled = false;
+
+          submitText.textContent = "Login";
+
+        }
+
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
