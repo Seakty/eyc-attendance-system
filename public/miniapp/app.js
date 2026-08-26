@@ -35,14 +35,25 @@ async function handleCheckIn() {
 
 function getUserCoordinates() {
   return new Promise((resolve, reject) => {
-    // SMART CHECK: Are we actually inside the real Telegram app?
+    // 1. SMART CHECK: Are we inside Telegram?
     const isInsideTelegram = tg && tg.platform && tg.platform !== "unknown";
 
-    // If inside Telegram, use their super-fast native GPS
     if (isInsideTelegram && tg.LocationManager) {
+      // THE FIX: Set a 3-second safety timer!
+      // If Telegram freezes (common on Desktop), this triggers the fallback.
+      const telegramTimeout = setTimeout(() => {
+        console.warn(
+          "Telegram LocationManager timed out. Falling back to browser GPS.",
+        );
+        fallbackToBrowserGeolocation(resolve, reject);
+      }, 3000);
+
       tg.LocationManager.init(() => {
         tg.LocationManager.getLocation((data) => {
-          if (data) {
+          // If Telegram actually responds, cancel the 3-second timer!
+          clearTimeout(telegramTimeout);
+
+          if (data && data.latitude) {
             resolve({ lat: data.latitude, lng: data.longitude });
           } else {
             fallbackToBrowserGeolocation(resolve, reject);
@@ -52,7 +63,7 @@ function getUserCoordinates() {
       return;
     }
 
-    // If in Chrome (testing) or Telegram fails, use standard browser GPS
+    // 3. If in normal Chrome or LocationManager doesn't exist at all
     fallbackToBrowserGeolocation(resolve, reject);
   });
 }
