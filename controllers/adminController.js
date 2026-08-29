@@ -53,3 +53,32 @@ exports.updateSettings = async (req, res) => {
         res.status(500).send('Failed to save settings: ' + error.message);
     }
 };
+
+// GET: Fetch campus settings page
+exports.getSettingsPage = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM campuses LIMIT 1');
+        
+        // Default object if table is empty
+        const settings = rows.length > 0 ? rows[0] : {
+            late_cutoff_time: '08:15',
+            school_lat: '',
+            school_lng: '',
+            gps_radius_meters: 50
+        };
+
+        let qrCodeUrl = null;
+        if (settings.id) {
+            const qrData = JSON.stringify({
+                campus_id: settings.id,
+                type: 'ENTRANCE_QR'
+            });
+            qrCodeUrl = await QRCode.toDataURL(qrData);
+        }
+
+        res.render('admin/settings', { settings, qrCodeUrl });
+    } catch (error) {
+        console.error('Error fetching settings:', error);
+        res.status(500).send('Internal Server Error: ' + error.message);
+    }
+};
