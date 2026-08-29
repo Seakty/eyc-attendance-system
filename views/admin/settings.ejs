@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Settings | EYC Attendance System</title>
+
+  <link rel="icon" type="image/png" href="/images/favicon.ico" />
+
+  <!-- Tailwind CDN (Configured to match Register page colors) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: "#112D4E",
+            calmblue: "#3F72AF",
+            iceblue: "#DBE2EF",
+            offwhite: "#F9F7F6",
+            accentOrange: "#F2994A",
+            accentGreen: "#6FCF97",
+            accentCoral: "#EB5757",
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
+
+    /* Print styling rules */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printable-poster, #printable-poster * {
+        visibility: visible;
+      }
+      #printable-poster {
+        position: absolute;
+        left: 50%;
+        top: 10%;
+        transform: translateX(-50%);
+        width: 80%;
+        box-shadow: none !important;
+        border: 2px solid #112D4E !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-offwhite min-h-screen py-10 px-4 flex justify-center items-start">
+
+  <div class="w-full max-w-2xl space-y-8">
+
+    <!-- Header Section -->
+    <div class="no-print text-center">
+      <div class="flex justify-center mb-3">
+        <img
+          src="/images/eyc-logo.png"
+          alt="EYC — Empowering Youth in Cambodia"
+          class="h-16 sm:h-20 w-auto object-contain drop-shadow-sm"
+        />
+      </div>
+      <h1 class="text-navy text-2xl sm:text-3xl font-bold">Campus Settings</h1>
+      <p class="text-calmblue text-sm sm:text-base mt-1">
+        Configure entrance parameters & download attendance QR poster
+      </p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="no-print bg-white border border-iceblue shadow-xl rounded-2xl p-6 sm:p-8">
+      
+      <!-- Settings Form -->
+      <form action="/admin/settings" method="POST" class="space-y-5">
+        
+        <!-- Late Cutoff Time -->
+        <div>
+          <label for="late_cutoff_time" class="block text-sm font-medium text-navy mb-1">
+            Late Cutoff Time <span class="text-accentCoral">*</span>
+          </label>
+          <input
+            type="time"
+            id="late_cutoff_time"
+            name="late_cutoff_time"
+            value="<%= settings.late_cutoff_time || '' %>"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy bg-white focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+          />
+        </div>
+
+        <!-- Two Column Grid for Lat/Lng -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Latitude -->
+          <div>
+            <label for="school_lat" class="block text-sm font-medium text-navy mb-1">
+              School Latitude <span class="text-accentCoral">*</span>
+            </label>
+            <input
+              type="number"
+              step="any"
+              id="school_lat"
+              name="school_lat"
+              value="<%= settings.school_lat || '' %>"
+              placeholder="e.g. 11.5564"
+              required
+              class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            />
+          </div>
+
+          <!-- Longitude -->
+          <div>
+            <label for="school_lng" class="block text-sm font-medium text-navy mb-1">
+              School Longitude <span class="text-accentCoral">*</span>
+            </label>
+            <input
+              type="number"
+              step="any"
+              id="school_lng"
+              name="school_lng"
+              value="<%= settings.school_lng || '' %>"
+              placeholder="e.g. 104.9282"
+              required
+              class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            />
+          </div>
+        </div>
+
+        <!-- Allowed GPS Radius -->
+        <div>
+          <label for="gps_radius_meters" class="block text-sm font-medium text-navy mb-1">
+            Allowed GPS Radius (meters) <span class="text-accentCoral">*</span>
+          </label>
+          <input
+            type="number"
+            id="gps_radius_meters"
+            name="gps_radius_meters"
+            value="<%= settings.gps_radius_meters || '' %>"
+            placeholder="e.g. 50"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+          />
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="w-full bg-calmblue hover:bg-navy text-white font-semibold py-3 rounded-xl transition shadow-md hover:shadow-lg"
+        >
+          Save Settings & Generate QR
+        </button>
+      </form>
+    </div>
+
+    <!-- Entrance QR Poster Display Section -->
+    <% if (typeof qrCodeUrl !== 'undefined' && qrCodeUrl) { %>
+      <div class="space-y-4">
+        
+        <!-- Action Buttons -->
+        <div class="no-print flex flex-col sm:flex-row gap-3 justify-end">
+          <button
+            onclick="window.print()"
+            class="bg-navy hover:bg-calmblue text-white px-5 py-2.5 rounded-xl font-medium transition flex items-center justify-center gap-2 shadow-sm"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print Poster
+          </button>
+
+          <a
+            href="<%= qrCodeUrl %>"
+            download="EYC-Entrance-QR.png"
+            class="bg-white border border-iceblue text-navy hover:bg-iceblue/50 px-5 py-2.5 rounded-xl font-medium transition flex items-center justify-center gap-2 text-center shadow-sm"
+          >
+            <svg class="w-5 h-5 text-calmblue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download Image
+          </a>
+        </div>
+
+        <!-- Printable Poster Container -->
+        <div id="printable-poster" class="bg-white border-2 border-iceblue shadow-xl rounded-2xl p-8 text-center space-y-6">
+          <div class="flex justify-center">
+            <img src="/images/eyc-logo.png" alt="EYC Logo" class="h-16 w-auto object-contain" />
+          </div>
+
+          <div>
+            <h2 class="text-navy text-2xl font-bold tracking-wide">ENTRANCE QR CODE</h2>
+            <p class="text-calmblue text-sm font-medium mt-1">Empowering Youth in Cambodia</p>
+          </div>
+
+          <div class="flex justify-center">
+            <div class="p-4 bg-offwhite border-2 border-navy rounded-2xl inline-block shadow-inner">
+              <img src="<%= qrCodeUrl %>" alt="Entrance QR Code" class="w-64 h-64 object-contain" />
+            </div>
+          </div>
+
+          <div class="max-w-md mx-auto space-y-1">
+            <p class="text-navy font-semibold text-base">Scan to Mark Daily Attendance</p>
+            <p class="text-gray-500 text-xs sm:text-sm">Please open your EYC Staff Mobile App and align the scanner within the frame.</p>
+          </div>
+        </div>
+
+      </div>
+    <% } %>
+
+    <!-- Footer -->
+    <p class="no-print text-center text-xs text-gray-400 pt-4">
+      © <%= new Date().getFullYear() %> Empowering Youth in Cambodia (EYC)
+    </p>
+
+  </div>
+
+</body>
+</html>

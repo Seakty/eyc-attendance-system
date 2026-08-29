@@ -5,6 +5,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const pageRoutes = require("./routes/pages");
 const miniappRoutes = require("./routes/miniapp");
+const adminRoutes = require("./routes/admin");
 
 // Create the Express application
 const app = express();
@@ -28,6 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/attendance", miniappRoutes);
 
 // View Routes (Returns HTML/EJS)
+app.use("/admin", adminRoutes);
 app.use("/", pageRoutes);
 
 // ============================================================
