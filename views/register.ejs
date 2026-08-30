@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Registration | EYC Attendance System</title>
+
+  <link rel="icon" type="image/png" href="/images/favicon.ico" />
+
+  <!-- Tailwind CDN (no build step, matches admin portal stack) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: "#112D4E",
+            calmblue: "#3F72AF",
+            iceblue: "#DBE2EF",
+            offwhite: "#F9F7F6",
+            accentOrange: "#F2994A",
+            accentGreen: "#6FCF97",
+            accentCoral: "#EB5757",
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
+
+    .field-error {
+      display: none;
+    }
+
+    .field-error.show {
+      display: block;
+    }
+
+    input.invalid,
+    select.invalid {
+      border-color: #EB5757 !important;
+    }
+  </style>
+</head>
+
+<body class="bg-offwhite min-h-screen flex items-center justify-center px-4 py-10">
+
+  <div class="w-full max-w-md">
+
+    <!-- Logo & Branding -->
+    <div class="text-center mb-6">
+      <div class="flex justify-center mb-3">
+        <img
+          src="/images/eyc-logo.png"
+          alt="EYC — Empowering Youth in Cambodia"
+          class="h-16 sm:h-20 w-auto object-contain drop-shadow-sm"
+        />
+      </div>
+
+      <h1 class="text-navy text-xl sm:text-2xl font-bold">
+        Register New Staff
+      </h1>
+
+      <p class="text-calmblue text-sm sm:text-base">
+        Staff Registration — EYC Attendance System
+      </p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white border border-iceblue shadow-xl rounded-2xl p-6 sm:p-8">
+
+      <!-- General Error -->
+      <div
+        id="formError"
+        class="field-error mb-4 rounded-lg bg-accentCoral/10 border border-accentCoral text-accentCoral text-sm px-4 py-3"
+      ></div>
+
+      <!-- Success -->
+      <div
+        id="formSuccess"
+        class="field-error mb-4 rounded-lg bg-accentGreen/10 border border-accentGreen text-green-700 text-sm px-4 py-3"
+      ></div>
+
+      <form id="registerForm" novalidate class="space-y-5">
+
+        <!-- Full Name -->
+        <div>
+          <label
+            for="fullName"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            Full Name <span class="text-accentCoral">*</span>
+          </label>
+
+          <input
+            type="text"
+            id="fullName"
+            name="full_name"
+            autocomplete="name"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            placeholder="e.g. Sok Vathana"
+          />
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="fullName"
+          >
+            Full name is required.
+          </p>
+        </div>
+
+        <!-- Position -->
+        <div>
+          <label
+            for="position"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            Position <span class="text-accentCoral">*</span>
+          </label>
+
+          <input
+            type="text"
+            id="position"
+            name="position"
+            autocomplete="organization-title"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            placeholder="e.g. Teacher, Admin Staff"
+          />
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="position"
+          >
+            Position is required.
+          </p>
+        </div>
+
+        <!-- School -->
+        <div>
+          <label
+            for="campus"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            School <span class="text-accentCoral">*</span>
+          </label>
+
+          <select
+            id="campus"
+            name="campus_id"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy bg-white focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+          >
+            <option value="" disabled selected>
+              Select school
+            </option>
+
+            <%
+              const campusList =
+                (typeof campuses !== 'undefined' &&
+                Array.isArray(campuses) &&
+                campuses.length)
+                  ? campuses
+                  : [
+                      { id: 1, name: 'AZIZA THMEY' },
+                      { id: 2, name: 'YOUTH SCHOOL' },
+                      { id: 3, name: 'LAKE SIDE' }
+                    ];
+            %>
+
+            <% campusList.forEach(function(c) { %>
+              <option value="<%= c.id %>">
+                <%= c.name %>
+              </option>
+            <% }); %>
+          </select>
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="campus"
+          >
+            Please select a school.
+          </p>
+        </div>
+
+        <!-- Phone Number -->
+        <div>
+          <label
+            for="phone"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            Phone Number <span class="text-accentCoral">*</span>
+          </label>
+
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            autocomplete="tel"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            placeholder="012 345 678 or +855 12 345 678"
+          />
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="phone"
+          >
+            Enter a valid Cambodian phone number.
+          </p>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label
+            for="password"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            Password <span class="text-accentCoral">*</span>
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="new-password"
+            required
+            minlength="8"
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            placeholder="At least 8 characters"
+          />
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="password"
+          >
+            Password must be at least 8 characters.
+          </p>
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label
+            for="confirmPassword"
+            class="block text-sm font-medium text-navy mb-1"
+          >
+            Confirm Password <span class="text-accentCoral">*</span>
+          </label>
+
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirm_password"
+            autocomplete="new-password"
+            required
+            minlength="8"
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+            placeholder="Re-enter your password"
+          />
+
+          <p
+            class="field-error text-accentCoral text-xs mt-1"
+            data-error-for="confirmPassword"
+          >
+            Passwords do not match.
+          </p>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          id="submitBtn"
+          class="w-full bg-calmblue hover:bg-navy text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span id="submitText">Register</span>
+        </button>
+
+        <p class="text-center text-sm text-gray-500">
+          Already have an account?
+          <a
+            href="/login"
+            class="text-calmblue font-medium hover:text-navy hover:underline"
+          >
+            Login
+          </a>
+        </p>
+
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-6">
+      © <%= new Date().getFullYear() %> Empowering Youth in Cambodia (EYC)
+    </p>
+
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById("registerForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      const formError = document.getElementById("formError");
+      const formSuccess = document.getElementById("formSuccess");
+
+      // Cambodian mobile format: 0XXXXXXXX(X) or +855XXXXXXXX(X)
+      const PHONE_REGEX = /^(?:\+855|0)[1-9]\d{7,8}$/;
+
+      const fields = {
+        fullName: document.getElementById("fullName"),
+        position: document.getElementById("position"),
+        campus: document.getElementById("campus"),
+        phone: document.getElementById("phone"),
+        password: document.getElementById("password"),
+        confirmPassword: document.getElementById("confirmPassword"),
+      };
+
+      function setFieldError(key, show) {
+        const input = fields[key];
+        const msg = form.querySelector(`[data-error-for="${key}"]`);
+
+        if (show) {
+          input.classList.add("invalid");
+          if (msg) msg.classList.add("show");
+        } else {
+          input.classList.remove("invalid");
+          if (msg) msg.classList.remove("show");
+        }
+      }
+
+      function hideBanners() {
+        formError.classList.remove("show");
+        formSuccess.classList.remove("show");
+      }
+
+      function validate() {
+        let valid = true;
+
+        if (!fields.fullName.value.trim()) {
+          setFieldError("fullName", true);
+          valid = false;
+        } else {
+          setFieldError("fullName", false);
+        }
+
+        if (!fields.position.value.trim()) {
+          setFieldError("position", true);
+          valid = false;
+        } else {
+          setFieldError("position", false);
+        }
+
+        if (!fields.campus.value) {
+          setFieldError("campus", true);
+          valid = false;
+        } else {
+          setFieldError("campus", false);
+        }
+
+        const phone = fields.phone.value.trim().replace(/\s+/g, "");
+
+        if (!PHONE_REGEX.test(phone)) {
+          setFieldError("phone", true);
+          valid = false;
+        } else {
+          setFieldError("phone", false);
+        }
+
+        if (fields.password.value.length < 8) {
+          setFieldError("password", true);
+          valid = false;
+        } else {
+          setFieldError("password", false);
+        }
+
+        if (
+          fields.confirmPassword.value.length < 8 ||
+          fields.confirmPassword.value !== fields.password.value
+        ) {
+          setFieldError("confirmPassword", true);
+          valid = false;
+        } else {
+          setFieldError("confirmPassword", false);
+        }
+
+        return valid;
+      }
+
+      // Re-validate a field as the user fixes it
+      Object.keys(fields).forEach((key) => {
+        fields[key].addEventListener("input", () => {
+          hideBanners();
+          validate();
+        });
+      });
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        hideBanners();
+
+        if (!validate()) return;
+
+        const payload = {
+          fullName: fields.fullName.value.trim(),
+          position: fields.position.value.trim(),
+          campus_id: fields.campus.value,
+          phone: fields.phone.value.trim().replace(/\s+/g, ""),
+          password: fields.password.value,
+        };
+
+        submitBtn.disabled = true;
+        submitText.textContent = "Registering...";
+
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+            formError.textContent =
+              data.message ||
+              "Registration failed. Please try again.";
+
+            formError.classList.add("show");
+            return;
+          }
+
+          formSuccess.textContent =
+            data.message ||
+            "Registered successfully! Redirecting to login...";
+
+          formSuccess.classList.add("show");
+          form.reset();
+
+          setTimeout(function () {
+            window.location.href = "/login";
+          }, 1500);
+
+        } catch (err) {
+          formError.textContent =
+            "Could not reach the server. Check your connection.";
+
+          formError.classList.add("show");
+
+        } finally {
+          submitBtn.disabled = false;
+          submitText.textContent = "Register";
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

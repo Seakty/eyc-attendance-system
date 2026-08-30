@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f7fb;
+        margin: 0;
+        color: #1f2937;
+      }
+      .container {
+        max-width: 980px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .nav {
+        display: flex;
+        gap: 12px;
+      }
+      .nav a {
+        text-decoration: none;
+        color: #1f2937;
+        font-weight: 600;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 3px 14px rgba(15, 23, 42, 0.08);
+      }
+      .status {
+        font-weight: 600;
+        color: #1d4ed8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Reports</h1>
+        <nav class="nav">
+          <a href="/dashboard">Dashboard</a>
+          <a href="/staff">Staff</a>
+          <a href="/reports">Reports</a>
+        </nav>
+      </div>
+
+      <div class="card">
+        <p class="status">Monthly reporting is ready for the next export step.</p>
+        <p>Use the admin API endpoints to generate attendance summaries and export them to Excel.</p>
+      </div>
+    </div>
+  </body>
+</html>
