@@ -6,9 +6,12 @@ const scannerBox = document.getElementById("scannerBox");
 const btnSpinner = document.getElementById("btnSpinner");
 const btnIcon = document.getElementById("btnIcon");
 const btnLabel = document.getElementById("btnLabel");
+const qrScannerElement = document.getElementById("qrScanner");
 
 const tg = window.Telegram?.WebApp;
 const token = localStorage.getItem("eyc_auth_token");
+let qrScanner = null;
+let qrScannerStarted = false;
 
 if (!token) {
   // If no token exists, kick them back to the login page
@@ -128,9 +131,101 @@ async function sendLocationToServer(lat, lng) {
   if (data.isInside) {
     scannerBox.classList.remove("hidden");
     statusMessage.textContent = "Location verified.";
+    startQrScanner();
   } else {
     warningBox.classList.remove("hidden");
     distanceInfo.textContent = `You are ${data.distanceMeters}m away (allowed: ${data.allowedRadiusMeters}m).`;
+  }
+}
+
+async function startQrScanner() {
+  if (!window.Html5Qrcode || !qrScannerElement) {
+    statusMessage.textContent = "Camera library is unavailable in this browser.";
+    return;
+  }
+
+  try {
+    const devices = await Html5Qrcode.getCameras();
+    if (!devices || devices.length === 0) {
+      statusMessage.textContent = "No camera found on this device.";
+      return;
+    }
+
+    if (!qrScanner) {
+      qrScanner = new Html5Qrcode("qrScanner");
+    }
+
+    if (qrScannerStarted) {
+      return;
+    }
+
+    await qrScanner.start(
+      devices[0].id,
+      {
+        fps: 10,
+        qrbox: { width: 220, height: 220 },
+        aspectRatio: 1,
+      },
+      async (decodedText) => {
+        await scanQrToken(decodedText);
+      },
+      () => {
+        // Ignore frame-level scan noise. We only act on successful decode.
+      },
+    );
+
+    qrScannerStarted = true;
+    statusMessage.textContent = "Camera ready. Scan your QR check-in token.";
+  } catch (error) {
+    console.error("QR scanner failed to start:", error);
+    statusMessage.textContent = "Unable to start the camera. Please retry.";
+  }
+}
+
+async function scanQrToken(decodedText) {
+  if (!decodedText) return;
+
+  try {
+    if (qrScanner && qrScannerStarted) {
+      await qrScanner.stop();
+      qrScannerStarted = false;
+    }
+
+    const response = await fetch("/api/attendance/scan", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("eyc_auth_token")}`,
+      },
+      body: JSON.stringify({ qrToken: decodedText }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "QR scan failed.");
+    }
+
+    const timestamp = new Date(data.timestamp).toLocaleString([], {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+    statusMessage.textContent = `${data.message} ${timestamp} (${data.statusLabel || data.action})`;
+    scannerBox.classList.remove("hidden");
+    scannerBox.querySelector("span").textContent = `Scanned successfully — ${timestamp}`;
+
+    if (data.action === "check-in") {
+      btnLabel.textContent = "Checked in";
+    } else {
+      btnLabel.textContent = "Checked out";
+    }
+  } catch (error) {
+    console.error("Scan processing failed:", error);
+    statusMessage.textContent = error.message || "Unable to process QR scan.";
+    if (qrScanner && !qrScannerStarted) {
+      startQrScanner();
+    }
   }
 }
 
@@ -138,6 +233,10 @@ function resetUI() {
   statusMessage.textContent = "";
   warningBox.classList.add("hidden");
   scannerBox.classList.add("hidden");
+  if (qrScanner && qrScannerStarted) {
+    qrScanner.stop().catch(() => undefined);
+    qrScannerStarted = false;
+  }
 }
 
 function setLoading(isLoading) {
