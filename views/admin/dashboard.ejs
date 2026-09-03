@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    ```
+    <title>EYC Attendance - Admin Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4f46e5",
+              secondary: "#6366f1",
+            },
+          },
+        },
+      };
+    </script>
+    ```
+  </head>
+
+  <body class="bg-[#F9F7F6] text-slate-800">
+    ```
+    <div class="flex min-h-screen">
+      <!-- ================= SIDEBAR ================= -->
+      <aside
+        class="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col"
+      >
+        <!-- Logo -->
+        <div class="h-20 flex items-center px-6 border-b border-slate-200">
+          <div
+            class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg"
+          >
+            E
+          </div>
+
+          <div class="ml-3">
+            <h1 class="font-bold text-lg text-slate-900">EYC</h1>
+            <p class="text-xs text-slate-500">Attendance System</p>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-2">
+          <p
+            class="px-3 pt-2 pb-3 text-xs font-semibold text-slate-400 uppercase"
+          >
+            Main Menu
+          </p>
+
+          <a
+            href="#"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-semibold"
+          >
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+            Dashboard
+          </a>
+
+          <a
+            href="#"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+          >
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Staff
+          </a>
+
+          <a
+            href="#"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+          >
+            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+            Attendance
+          </a>
+
+          <a
+            href="#"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+          >
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+            Reports
+          </a>
+
+          <p
+            class="px-3 pt-7 pb-3 text-xs font-semibold text-slate-400 uppercase"
+          >
+            System
+          </p>
+
+          <a
+            href="#"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+          >
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            Settings
+          </a>
+        </nav>
+
+        <!-- User -->
+        <div class="p-4 border-t border-slate-200">
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+            <div
+              class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold"
+            >
+              AD
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm truncate">Admin</p>
+
+              <p class="text-xs text-slate-500 truncate">Administrator</p>
+            </div>
+
+            <button class="text-slate-400 hover:text-slate-700">
+              <i data-lucide="more-vertical" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ================= MAIN CONTENT ================= -->
+      <main class="flex-1 min-w-0">
+        <!-- Header -->
+        <header
+          class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-5 lg:px-8"
+        >
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Dashboard</h2>
+
+            <p class="text-sm text-slate-500">Welcome back, Admin 👋</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Notification -->
+            <button
+              class="relative w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-50"
+            >
+              <i data-lucide="bell" class="w-5 h-5 text-slate-600"></i>
+
+              <span
+                class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"
+              ></span>
+            </button>
+
+            <!-- Mobile Menu -->
+            <button
+              class="lg:hidden w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center"
+            >
+              <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Dashboard -->
+        <div class="p-5 lg:p-8 space-y-8">
+          <!-- Page Title -->
+          <div
+            class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">
+                Attendance Overview
+              </h1>
+
+              <p class="text-slate-500 mt-1">Here's what's happening today.</p>
+            </div>
+
+            <div
+              class="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-xl"
+            >
+              <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
+
+              <span class="text-sm font-medium"> August 31, 2026 </span>
+            </div>
+          </div>
+
+          <!-- ================= SUMMARY CARDS ================= -->
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <!-- Present -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"
+                >
+                  <i data-lucide="user-check" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full"
+                >
+                  Today
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Total Present</p>
+
+              <div class="flex items-end gap-2 mt-1">
+                <h3 id="totalPresent" class="text-3xl font-bold text-slate-900">
+                  0
+                </h3>
+
+                <span class="text-sm text-emerald-600 font-medium mb-1">
+                  +8.2%
+                </span>
+              </div>
+            </div>
+
+            <!-- Late -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"
+                >
+                  <i data-lucide="clock-3" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full"
+                >
+                  Today
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Late</p>
+
+              <div class="flex items-end gap-2 mt-1">
+                <h3 id="lateCount" class="text-3xl font-bold text-slate-900">
+                  0
+                </h3>
+
+                <span class="text-sm text-amber-600 font-medium mb-1">
+                  3.4%
+                </span>
+              </div>
+            </div>
+
+            <!-- Absent -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center"
+                >
+                  <i data-lucide="user-x" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full"
+                >
+                  Today
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Absent</p>
+
+              <div class="flex items-end gap-2 mt-1">
+                <h3 id="absentCount" class="text-3xl font-bold text-slate-900">
+                  0
+                </h3>
+
+                <span class="text-sm text-red-600 font-medium mb-1">
+                  1.8%
+                </span>
+              </div>
+            </div>
+
+            <!-- Flagged -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"
+                >
+                  <i data-lucide="flag" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full"
+                >
+                  Review
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Flagged Scans</p>
+
+              <div class="flex items-end gap-2 mt-1">
+                <h3 id="flaggedScans" class="text-3xl font-bold text-slate-900">
+                  0
+                </h3>
+
+                <span class="text-sm text-purple-600 font-medium mb-1">
+                  Needs review
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= ATTENDANCE TABLE ================= -->
+
+          <section
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+          >
+            <!-- Table Header -->
+            <div class="p-5 lg:p-6 border-b border-slate-200">
+              <div
+                class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+              >
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900">
+                    Today's Attendance
+                  </h2>
+
+                  <p class="text-sm text-slate-500 mt-1">
+                    Live attendance check-ins and check-outs
+                  </p>
+                </div>
+
+                <!-- Search -->
+                <div class="relative w-full lg:w-72">
+                  <i
+                    data-lucide="search"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                  >
+                  </i>
+
+                  <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search staff..."
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    onkeyup="searchTable()"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                  <tr class="text-left text-xs uppercase text-slate-500">
+                    <th class="px-6 py-4 font-semibold">Staff</th>
+
+                    <th class="px-6 py-4 font-semibold">Campus</th>
+
+                    <th class="px-6 py-4 font-semibold">Check In</th>
+
+                    <th class="px-6 py-4 font-semibold">Check Out</th>
+
+                    <th class="px-6 py-4 font-semibold">Status</th>
+
+                    <th class="px-6 py-4 font-semibold">Action</th>
+                  </tr>
+                </thead>
+
+                <tbody id="attendanceTable" class="divide-y divide-slate-100">
+                </tbody>
+                  <!-- Row 1 -->
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold"
+                        >
+                          SS
+                        </div>
+
+                        <div>
+                          <p class="font-semibold text-slate-900">
+                            Sambath Seakty
+                          </p>
+
+                          <p class="text-xs text-slate-500">Teacher</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-slate-600">Phnom Penh</td>
+
+                    <td class="px-6 py-4 font-medium">07:52 AM</td>
+
+                    <td class="px-6 py-4 text-slate-400">—</td>
+
+                    <td class="px-6 py-4">
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold"
+                      >
+                        <span
+                          class="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                        ></span>
+                        Present
+                      </span>
+                    </td>
+
+                    <td class="px-6 py-4">
+                      <button class="text-slate-400 hover:text-indigo-600">
+                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Row 2 -->
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-9 h-9 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-semibold"
+                        >
+                          DR
+                        </div>
+
+                        <div>
+                          <p class="font-semibold text-slate-900">Dara Ratha</p>
+
+                          <p class="text-xs text-slate-500">Teacher</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-slate-600">Toul Kork</td>
+
+                    <td class="px-6 py-4 font-medium">08:17 AM</td>
+
+                    <td class="px-6 py-4 text-slate-400">—</td>
+
+                    <td class="px-6 py-4">
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold"
+                      >
+                        <span
+                          class="w-1.5 h-1.5 rounded-full bg-amber-500"
+                        ></span>
+                        Late
+                      </span>
+                    </td>
+
+                    <td class="px-6 py-4">
+                      <button class="text-slate-400 hover:text-indigo-600">
+                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Row 3 -->
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold"
+                        >
+                          KT
+                        </div>
+
+                        <div>
+                          <p class="font-semibold text-slate-900">Kim Tola</p>
+
+                          <p class="text-xs text-slate-500">Staff</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-slate-600">Sen Sok</td>
+
+                    <td class="px-6 py-4 font-medium">07:45 AM</td>
+
+                    <td class="px-6 py-4 font-medium">05:02 PM</td>
+
+                    <td class="px-6 py-4">
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold"
+                      >
+                        <span
+                          class="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                        ></span>
+                        Present
+                      </span>
+                    </td>
+
+                    <td class="px-6 py-4">
+                      <button class="text-slate-400 hover:text-indigo-600">
+                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Row 4 -->
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-9 h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold"
+                        >
+                          SC
+                        </div>
+
+                        <div>
+                          <p class="font-semibold text-slate-900">Sok Chan</p>
+
+                          <p class="text-xs text-slate-500">Teacher</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-slate-600">Phnom Penh</td>
+
+                    <td class="px-6 py-4 font-medium">08:04 AM</td>
+
+                    <td class="px-6 py-4 text-slate-400">—</td>
+
+                    <td class="px-6 py-4">
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-semibold"
+                      >
+                        <span
+                          class="w-1.5 h-1.5 rounded-full bg-purple-500"
+                        ></span>
+                        Flagged
+                      </span>
+                    </td>
+
+                    <td class="px-6 py-4">
+                      <button class="text-slate-400 hover:text-indigo-600">
+                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table Footer -->
+            <div
+              class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3"
+            >
+              <p class="text-sm text-slate-500">
+                Showing <span class="font-semibold text-slate-700">4</span> of
+                <span class="font-semibold text-slate-700">149</span> records
+              </p>
+
+              <div class="flex gap-2">
+                <button
+                  class="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-500 hover:bg-slate-50"
+                >
+                  Previous
+                </button>
+
+                <button
+                  class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm"
+                >
+                  1
+                </button>
+
+                <button
+                  class="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+                >
+                  2
+                </button>
+
+                <button
+                  class="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Auto Refresh -->
+          <div
+            class="flex items-center justify-end gap-2 text-xs text-slate-400"
+          >
+            <span
+              class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+            ></span>
+
+            Live data • Automatically updates every 15 seconds
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+      // Activate Lucide icons
+      lucide.createIcons();
+
+      // Search attendance table
+      function searchTable() {
+        const input = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+
+        const rows = document
+          .getElementById("attendanceTable")
+          .getElementsByTagName("tr");
+
+        for (let i = 0; i < rows.length; i++) {
+          const text = rows[i].textContent.toLowerCase();
+
+          rows[i].style.display = text.includes(input) ? "" : "none";
+        }
+      }
+
+      // ==========================================
+      // ADM-01 REQUIREMENT #4
+      // Auto refresh every 15 seconds
+      // ==========================================
+
+          setInterval(function () {
+            console.log("Refreshing attendance data...");
+
+            loadAttendanceSummary();
+            loadTodayAttendance();
+          }, 15000);
+
+      async function loadAttendanceSummary() {
+        try {
+          const response = await fetch("/api/attendance/summary");
+
+          if (!response.ok) {
+            throw new Error("Failed to load attendance summary");
+          }
+
+          const result = await response.json();
+
+          if (result.status !== "success") {
+            throw new Error("API returned an error");
+          }
+
+          const data = result.data;
+
+          document.getElementById("totalPresent").textContent =
+            data.totalPresent;
+
+          document.getElementById("lateCount").textContent = data.late;
+
+          document.getElementById("absentCount").textContent = data.absent;
+
+          document.getElementById("flaggedScans").textContent =
+            data.flaggedScans;
+        } catch (error) {
+          console.error("Could not load attendance summary:", error);
+        }
+      }
+      async function loadTodayAttendance() {
+  try {
+    const response = await fetch("/api/attendance/today");
+
+    if (!response.ok) {
+      throw new Error("Failed to load today's attendance");
+    }
+
+    const result = await response.json();
+
+    if (result.status !== "success") {
+      throw new Error("API returned an error");
+    }
+
+    const table = document.getElementById("attendanceTable");
+
+    table.innerHTML = "";
+
+    if (result.data.length === 0) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="6" class="px-6 py-8 text-center text-slate-500">
+            No attendance records for today.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    result.data.forEach((record) => {
+      const checkIn = record.check_in_at
+        ? new Date(record.check_in_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "—";
+
+      const checkOut = record.check_out_at
+        ? new Date(record.check_out_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "—";
+
+      const statusClass =
+        record.status === "Late"
+          ? "bg-amber-50 text-amber-700"
+          : record.status === "Absent"
+          ? "bg-red-50 text-red-700"
+          : "bg-emerald-50 text-emerald-700";
+
+      const dotClass =
+        record.status === "Late"
+          ? "bg-amber-500"
+          : record.status === "Absent"
+          ? "bg-red-500"
+          : "bg-emerald-500";
+
+      const initials = record.full_name
+        .split(" ")
+        .map((name) => name[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase();
+
+      table.innerHTML += `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+                ${initials}
+              </div>
+
+              <div>
+                <p class="font-semibold text-slate-900">
+                  ${record.full_name}
+                </p>
+                <p class="text-xs text-slate-500">
+                  ${record.position || "Staff"}
+                </p>
+              </div>
+            </div>
+          </td>
+
+          <td class="px-6 py-4 text-slate-600">
+            ${record.campus_name || "—"}
+          </td>
+
+          <td class="px-6 py-4 font-medium">
+            ${checkIn}
+          </td>
+
+          <td class="px-6 py-4 font-medium">
+            ${checkOut}
+          </td>
+
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${statusClass} text-xs font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full ${dotClass}"></span>
+              ${record.status}
+            </span>
+          </td>
+
+          <td class="px-6 py-4">
+            <button class="text-slate-400 hover:text-indigo-600">
+              <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    lucide.createIcons();
+  } catch (error) {
+    console.error("Could not load today's attendance:", error);
+  }
+}
+      loadAttendanceSummary();
+      loadTodayAttendance();
+    </script>
+    ```
+  </body>
+</html>

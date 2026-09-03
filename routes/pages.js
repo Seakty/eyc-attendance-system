@@ -17,5 +17,7 @@ router.get("/register", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
+router.get("/admin/dashboard", (req, res) => {
+  res.render("admin/dashboard");
+});
 module.exports = router;
