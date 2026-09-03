@@ -623,12 +623,12 @@
       // Auto refresh every 15 seconds
       // ==========================================
 
-          setInterval(function () {
-            console.log("Refreshing attendance data...");
+    setInterval(function () {
+      console.log("Refreshing attendance data...");
 
-            loadAttendanceSummary();
-            loadTodayAttendance();
-          }, 15000);
+      loadAttendanceSummary();
+      loadTodayAttendance();
+    }, 15000);
 
       async function loadAttendanceSummary() {
         try {
