@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
     if (existingUsers.length > 0) {
       return res
         .status(400)
-        .json({ message: "លេខទូរស័ព្ទនេះត្រូវបានប្រើប្រាស់រួចហើយ" });
+        .json({ message: "This phone number is already in use." });
     }
 
     const saltRounds = 10;
@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
     );
 
     res.status(201).json({
-      message: "ចុះឈ្មោះជោគជ័យ",
+      message: "Registration successful",
       userId: result.insertId,
     });
   } catch (err) {
@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
     if (rows.length === 0) {
       return res
         .status(400)
-        .json({ message: "លេខទូរស័ព្ទ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ" });
+        .json({ message: "Invalid phone number or password" });
     }
 
     const user = rows[0];
@@ -56,16 +56,16 @@ exports.login = async (req, res) => {
     // 🔒 SECURITY FIX: Check if the admin has deactivated this account
     // Note: Make sure you have an 'is_active' boolean/tinyint column in your teachers table!
     if (!user.is_active) {
-      return res
-        .status(403)
-        .json({ message: "គណនីរបស់អ្នកត្រូវបានផ្អាក សូមទាក់ទង Admin" });
+      return res.status(403).json({
+        message: "Your account has been deactivated. Please contact Admin.",
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res
         .status(400)
-        .json({ message: "លេខទូរស័ព្ទ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ" });
+        .json({ message: "Invalid phone number or password" });
     }
 
     // ⚡ PERFORMANCE FIX: Added campus_id to the token payload
@@ -80,15 +80,25 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" },
     );
 
+    const [campusRows] = await pool.execute(
+      "SELECT name FROM campuses WHERE id = ?",
+      [user.campus_id],
+    );
+
+    const campusName =
+      campusRows.length > 0 ? campusRows[0].name : "EYC Main Campus";
+
     res.json({
-      message: "ចូលប្រើប្រាស់ជោគជ័យ",
+      message: "Login successful",
       token,
       user: {
         id: user.id,
+        name: user.full_name,
         fullName: user.full_name,
         phone: user.phone,
         position: user.position,
         campus_id: user.campus_id,
+        campusName: campusName,
       },
     });
   } catch (err) {
