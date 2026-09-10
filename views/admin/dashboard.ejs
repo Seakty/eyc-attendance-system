@@ -5,7 +5,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    ```
     <title>EYC Attendance - Admin Dashboard</title>
 
     <!-- Tailwind CSS -->
@@ -26,11 +25,9 @@
         },
       };
     </script>
-    ```
   </head>
 
   <body class="bg-[#F9F7F6] text-slate-800">
-    ```
     <div class="flex min-h-screen">
       <!-- ================= SIDEBAR ================= -->
       <aside
@@ -116,7 +113,6 @@
 
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-sm truncate">Admin</p>
-
               <p class="text-xs text-slate-500 truncate">Administrator</p>
             </div>
 
@@ -135,7 +131,6 @@
         >
           <div>
             <h2 class="text-xl font-bold text-slate-900">Dashboard</h2>
-
             <p class="text-sm text-slate-500">Welcome back, Admin 👋</p>
           </div>
 
@@ -336,8 +331,7 @@
                   <i
                     data-lucide="search"
                     class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                  >
-                  </i>
+                  ></i>
 
                   <input
                     type="text"
@@ -356,191 +350,21 @@
                 <thead class="bg-slate-50 border-b border-slate-200">
                   <tr class="text-left text-xs uppercase text-slate-500">
                     <th class="px-6 py-4 font-semibold">Staff</th>
-
                     <th class="px-6 py-4 font-semibold">Campus</th>
-
                     <th class="px-6 py-4 font-semibold">Check In</th>
-
                     <th class="px-6 py-4 font-semibold">Check Out</th>
-
                     <th class="px-6 py-4 font-semibold">Status</th>
-
                     <th class="px-6 py-4 font-semibold">Action</th>
                   </tr>
                 </thead>
 
-                <tbody id="attendanceTable" class="divide-y divide-slate-100">
-                </tbody>
-                  <!-- Row 1 -->
-                  <tr class="hover:bg-slate-50 transition">
-                    <td class="px-6 py-4">
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold"
-                        >
-                          SS
-                        </div>
-
-                        <div>
-                          <p class="font-semibold text-slate-900">
-                            Sambath Seakty
-                          </p>
-
-                          <p class="text-xs text-slate-500">Teacher</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td class="px-6 py-4 text-slate-600">Phnom Penh</td>
-
-                    <td class="px-6 py-4 font-medium">07:52 AM</td>
-
-                    <td class="px-6 py-4 text-slate-400">—</td>
-
-                    <td class="px-6 py-4">
-                      <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold"
-                      >
-                        <span
-                          class="w-1.5 h-1.5 rounded-full bg-emerald-500"
-                        ></span>
-                        Present
-                      </span>
-                    </td>
-
-                    <td class="px-6 py-4">
-                      <button class="text-slate-400 hover:text-indigo-600">
-                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-                      </button>
-                    </td>
-                  </tr>
-
-                  <!-- Row 2 -->
-                  <tr class="hover:bg-slate-50 transition">
-                    <td class="px-6 py-4">
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-9 h-9 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-semibold"
-                        >
-                          DR
-                        </div>
-
-                        <div>
-                          <p class="font-semibold text-slate-900">Dara Ratha</p>
-
-                          <p class="text-xs text-slate-500">Teacher</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td class="px-6 py-4 text-slate-600">Toul Kork</td>
-
-                    <td class="px-6 py-4 font-medium">08:17 AM</td>
-
-                    <td class="px-6 py-4 text-slate-400">—</td>
-
-                    <td class="px-6 py-4">
-                      <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold"
-                      >
-                        <span
-                          class="w-1.5 h-1.5 rounded-full bg-amber-500"
-                        ></span>
-                        Late
-                      </span>
-                    </td>
-
-                    <td class="px-6 py-4">
-                      <button class="text-slate-400 hover:text-indigo-600">
-                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-                      </button>
-                    </td>
-                  </tr>
-
-                  <!-- Row 3 -->
-                  <tr class="hover:bg-slate-50 transition">
-                    <td class="px-6 py-4">
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold"
-                        >
-                          KT
-                        </div>
-
-                        <div>
-                          <p class="font-semibold text-slate-900">Kim Tola</p>
-
-                          <p class="text-xs text-slate-500">Staff</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td class="px-6 py-4 text-slate-600">Sen Sok</td>
-
-                    <td class="px-6 py-4 font-medium">07:45 AM</td>
-
-                    <td class="px-6 py-4 font-medium">05:02 PM</td>
-
-                    <td class="px-6 py-4">
-                      <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold"
-                      >
-                        <span
-                          class="w-1.5 h-1.5 rounded-full bg-emerald-500"
-                        ></span>
-                        Present
-                      </span>
-                    </td>
-
-                    <td class="px-6 py-4">
-                      <button class="text-slate-400 hover:text-indigo-600">
-                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-                      </button>
-                    </td>
-                  </tr>
-
-                  <!-- Row 4 -->
-                  <tr class="hover:bg-slate-50 transition">
-                    <td class="px-6 py-4">
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-9 h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold"
-                        >
-                          SC
-                        </div>
-
-                        <div>
-                          <p class="font-semibold text-slate-900">Sok Chan</p>
-
-                          <p class="text-xs text-slate-500">Teacher</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td class="px-6 py-4 text-slate-600">Phnom Penh</td>
-
-                    <td class="px-6 py-4 font-medium">08:04 AM</td>
-
-                    <td class="px-6 py-4 text-slate-400">—</td>
-
-                    <td class="px-6 py-4">
-                      <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-semibold"
-                      >
-                        <span
-                          class="w-1.5 h-1.5 rounded-full bg-purple-500"
-                        ></span>
-                        Flagged
-                      </span>
-                    </td>
-
-                    <td class="px-6 py-4">
-                      <button class="text-slate-400 hover:text-indigo-600">
-                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
+                <!-- IMPORTANT:
+                     No hardcoded rows here.
+                     JavaScript loads real database records. -->
+                <tbody
+                  id="attendanceTable"
+                  class="divide-y divide-slate-100"
+                ></tbody>
               </table>
             </div>
 
@@ -549,8 +373,11 @@
               class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3"
             >
               <p class="text-sm text-slate-500">
-                Showing <span class="font-semibold text-slate-700">4</span> of
-                <span class="font-semibold text-slate-700">149</span> records
+                Showing
+                <span class="font-semibold text-slate-700">4</span>
+                of
+                <span class="font-semibold text-slate-700">149</span>
+                records
               </p>
 
               <div class="flex gap-2">
@@ -623,17 +450,20 @@
       // Auto refresh every 15 seconds
       // ==========================================
 
-    setInterval(function () {
-      console.log("Refreshing attendance data...");
+      setInterval(function () {
+        console.log("Refreshing attendance data...");
 
-      loadAttendanceSummary();
-      loadTodayAttendance();
-    }, 15000);
+        loadAttendanceSummary();
+        loadTodayAttendance();
+      }, 15000);
+
+      // ==========================================
+      // Load Attendance Summary
+      // ==========================================
 
       async function loadAttendanceSummary() {
         try {
-          const response = await fetch("/api/attendance/summary");
-
+          const response = await fetch("/api/admin/summary");
           if (!response.ok) {
             throw new Error("Failed to load attendance summary");
           }
@@ -659,126 +489,157 @@
           console.error("Could not load attendance summary:", error);
         }
       }
+
+      // ==========================================
+      // Load Today's Attendance
+      // ==========================================
+
       async function loadTodayAttendance() {
-  try {
-    const response = await fetch("/api/attendance/today");
+        try {
+          const response = await fetch("/api/admin/today");
 
-    if (!response.ok) {
-      throw new Error("Failed to load today's attendance");
-    }
+          if (!response.ok) {
+            throw new Error("Failed to load today's attendance");
+          }
 
-    const result = await response.json();
+          const result = await response.json();
 
-    if (result.status !== "success") {
-      throw new Error("API returned an error");
-    }
+          if (result.status !== "success") {
+            throw new Error("API returned an error");
+          }
 
-    const table = document.getElementById("attendanceTable");
+          const table = document.getElementById("attendanceTable");
 
-    table.innerHTML = "";
+          table.innerHTML = "";
 
-    if (result.data.length === 0) {
-      table.innerHTML = `
-        <tr>
-          <td colspan="6" class="px-6 py-8 text-center text-slate-500">
-            No attendance records for today.
-          </td>
-        </tr>
-      `;
-      return;
-    }
+          if (result.data.length === 0) {
+            table.innerHTML = `
+              <tr>
+                <td
+                  colspan="6"
+                  class="px-6 py-8 text-center text-slate-500"
+                >
+                  No attendance records for today.
+                </td>
+              </tr>
+            `;
 
-    result.data.forEach((record) => {
-      const checkIn = record.check_in_at
-        ? new Date(record.check_in_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "—";
+            return;
+          }
 
-      const checkOut = record.check_out_at
-        ? new Date(record.check_out_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "—";
+          result.data.forEach((record) => {
+            const checkIn = record.check_in_at
+              ? new Date(record.check_in_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "—";
 
-      const statusClass =
-        record.status === "Late"
-          ? "bg-amber-50 text-amber-700"
-          : record.status === "Absent"
-          ? "bg-red-50 text-red-700"
-          : "bg-emerald-50 text-emerald-700";
+            const checkOut = record.check_out_at
+              ? new Date(record.check_out_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "—";
 
-      const dotClass =
-        record.status === "Late"
-          ? "bg-amber-500"
-          : record.status === "Absent"
-          ? "bg-red-500"
-          : "bg-emerald-500";
+            const statusClass =
+              record.status === "Late"
+                ? "bg-amber-50 text-amber-700"
+                : record.status === "Absent"
+                  ? "bg-red-50 text-red-700"
+                  : "bg-emerald-50 text-emerald-700";
 
-      const initials = record.full_name
-        .split(" ")
-        .map((name) => name[0])
-        .join("")
-        .substring(0, 2)
-        .toUpperCase();
+            const dotClass =
+              record.status === "Late"
+                ? "bg-amber-500"
+                : record.status === "Absent"
+                  ? "bg-red-500"
+                  : "bg-emerald-500";
 
-      table.innerHTML += `
-        <tr class="hover:bg-slate-50 transition">
-          <td class="px-6 py-4">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
-                ${initials}
-              </div>
+            const initials = record.full_name
+              .split(" ")
+              .map((name) => name[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase();
 
-              <div>
-                <p class="font-semibold text-slate-900">
-                  ${record.full_name}
-                </p>
-                <p class="text-xs text-slate-500">
-                  ${record.position || "Staff"}
-                </p>
-              </div>
-            </div>
-          </td>
+            table.innerHTML += `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold"
+                    >
+                      ${initials}
+                    </div>
 
-          <td class="px-6 py-4 text-slate-600">
-            ${record.campus_name || "—"}
-          </td>
+                    <div>
+                      <p class="font-semibold text-slate-900">
+                        ${record.full_name}
+                      </p>
 
-          <td class="px-6 py-4 font-medium">
-            ${checkIn}
-          </td>
+                      <p class="text-xs text-slate-500">
+                        ${record.position || "Staff"}
+                      </p>
+                    </div>
+                  </div>
+                </td>
 
-          <td class="px-6 py-4 font-medium">
-            ${checkOut}
-          </td>
+                <td class="px-6 py-4 text-slate-600">
+                  ${record.campus_name || "—"}
+                </td>
 
-          <td class="px-6 py-4">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${statusClass} text-xs font-semibold">
-              <span class="w-1.5 h-1.5 rounded-full ${dotClass}"></span>
-              ${record.status}
-            </span>
-          </td>
+                <td class="px-6 py-4 font-medium">
+                  ${checkIn}
+                </td>
 
-          <td class="px-6 py-4">
-            <button class="text-slate-400 hover:text-indigo-600">
-              <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-    });
+                <td class="px-6 py-4 font-medium">
+                  ${checkOut}
+                </td>
 
-    lucide.createIcons();
-  } catch (error) {
-    console.error("Could not load today's attendance:", error);
-  }
-}
+                <td class="px-6 py-4">
+                  <span
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${statusClass} text-xs font-semibold"
+                  >
+                    <span
+                      class="w-1.5 h-1.5 rounded-full ${dotClass}"
+                    ></span>
+
+                    ${record.status}
+                  </span>
+                </td>
+
+                <td class="px-6 py-4">
+                  <button
+                    class="text-slate-400 hover:text-indigo-600"
+                  >
+                    <i
+                      data-lucide="more-horizontal"
+                      class="w-5 h-5"
+                    ></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Activate icons for newly generated rows
+          lucide.createIcons();
+
+          // IMPORTANT:
+          // Re-apply search after the table is refreshed.
+          searchTable();
+        } catch (error) {
+          console.error("Could not load today's attendance:", error);
+        }
+      }
+
+      // ==========================================
+      // Initial Data Load
+      // ==========================================
+
       loadAttendanceSummary();
       loadTodayAttendance();
     </script>
-    ```
   </body>
 </html>
