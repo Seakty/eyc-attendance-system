@@ -119,9 +119,6 @@ async function testGeofence(req, res) {
   }
 }
 
-module.exports = {
-  checkLocation,
-  testGeofence,
 /**
  * POST /api/attendance/scan
  * Body: { qrToken }
