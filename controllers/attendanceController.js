@@ -17,20 +17,23 @@ async function checkLocation(req, res) {
   }
 
   try {
-    // TODO: once auth middleware is wired up, derive campusId from the
-    // authenticated teacher instead of trusting the request body.
+    // TODO: once auth middleware is wired up, derive campusId
+    // from the authenticated teacher instead of trusting
+    // the request body.
     const [rows] = await db.execute(
       "SELECT name, school_lat, school_lng, gps_radius_meters FROM campuses WHERE id = ? AND is_active = TRUE",
       [campusId || 1],
     );
 
     if (rows.length === 0) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "Campus not found." });
+      return res.status(404).json({
+        status: "error",
+        message: "Campus not found.",
+      });
     }
 
     const campus = rows[0];
+
     const result = isWithinGeofence(
       lat,
       lng,
@@ -48,9 +51,11 @@ async function checkLocation(req, res) {
     });
   } catch (error) {
     console.error("check-location failed:", error);
-    return res
-      .status(500)
-      .json({ status: "error", message: "Internal server error." });
+
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error.",
+    });
   }
 }
 
@@ -65,10 +70,13 @@ async function testGeofence(req, res) {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: "Campus not found in database." });
+      return res.status(404).json({
+        error: "Campus not found in database.",
+      });
     }
 
     const campus = rows[0];
+
     const schoolLat = parseFloat(campus.school_lat);
     const schoolLng = parseFloat(campus.school_lng);
     const radius = campus.gps_radius_meters;
@@ -87,25 +95,33 @@ async function testGeofence(req, res) {
     res.json({
       status: "success",
       campusTested: campus.name,
+
       schoolLocation: {
         lat: schoolLat,
         lng: schoolLng,
       },
+
       teacherLocation: {
         lat: teacherLat,
         lng: teacherLng,
       },
+
       allowedRadiusMeters: radius,
+
       geofenceResult: result,
     });
   } catch (error) {
     console.error("Database query failed:", error);
+
     res.status(500).json({
       error: "Internal Server Error while querying campuses table",
     });
   }
 }
 
+module.exports = {
+  checkLocation,
+  testGeofence,
 /**
  * POST /api/attendance/scan
  * Body: { qrToken }
