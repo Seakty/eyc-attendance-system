@@ -1,4 +1,5 @@
 const db = require("../config/database");
+const QRCode = require("qrcode");
 
 /**
  * GET /api/admin/summary
@@ -111,7 +112,82 @@ async function getTodayAttendance(req, res) {
   }
 }
 
+// ============================================================
+// GET /admin/settings
+// Renders the campus settings form with current DB values.
+// ============================================================
+async function getSettings(req, res) {
+  try {
+    const [rows] = await db.execute(
+      "SELECT late_cutoff_time, school_lat, school_lng, gps_radius_meters FROM campuses WHERE id = 1",
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).send("Campus not found in database.");
+    }
+
+    const settings = rows[0];
+
+    // Convert time to HH:mm format for the HTML time input if needed
+    if (settings.late_cutoff_time) {
+      settings.late_cutoff_time = settings.late_cutoff_time.substring(0, 5);
+    }
+
+    res.render("admin/settings", { settings, qrCodeUrl: null });
+  } catch (error) {
+    console.error("Failed to fetch settings:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+// ============================================================
+// POST /admin/settings
+// Updates campus settings and regenerates the entrance QR code.
+// ============================================================
+async function updateSettings(req, res) {
+  try {
+    const { late_cutoff_time, school_lat, school_lng, gps_radius_meters } =
+      req.body;
+
+    // 1. Update the database
+    await db.execute(
+      `UPDATE campuses 
+       SET late_cutoff_time = ?, school_lat = ?, school_lng = ?, gps_radius_meters = ? 
+       WHERE id = 1`,
+      [late_cutoff_time, school_lat, school_lng, gps_radius_meters],
+    );
+
+    // 2. Create payload string for the QR code
+    const qrData = JSON.stringify({
+      campusId: 1,
+      type: "eyc_entrance_qr",
+      lat: school_lat,
+      lng: school_lng,
+      radius: gps_radius_meters,
+      cutoff: late_cutoff_time,
+      timestamp: Date.now(),
+    });
+
+    // 3. Generate Data URL for the QR code image
+    const qrCodeUrl = await QRCode.toDataURL(qrData);
+
+    // 4. Render the page with the updated settings & new QR code
+    const settings = {
+      late_cutoff_time,
+      school_lat,
+      school_lng,
+      gps_radius_meters,
+    };
+    res.render("admin/settings", { settings, qrCodeUrl });
+  } catch (error) {
+    console.error("Failed to update settings or generate QR:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
 module.exports = {
   getAttendanceSummary,
   getTodayAttendance,
+  getSettings,
+  updateSettings,
 };

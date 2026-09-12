@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <link rel="icon" type="image/png" href="/images/favicon.ico" />
     <title>EYC Attendance - Admin Dashboard</title>
 
     <!-- Tailwind CSS -->
@@ -25,6 +25,10 @@
         },
       };
     </script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
   </head>
 
   <body class="bg-[#F9F7F6] text-slate-800">
@@ -34,18 +38,33 @@
         class="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col"
       >
         <!-- Logo -->
-        <div class="h-20 flex items-center px-6 border-b border-slate-200">
+        <a
+          href="/admin/dashboard"
+          class="h-20 flex items-center px-6 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200"
+        >
+          <!-- Framed Logo -->
           <div
-            class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg"
+            class="relative flex items-center justify-center p-1.5 bg-white rounded-xl border border-slate-200 shadow-sm"
           >
-            E
+            <img
+              src="/images/eyc-logo.png"
+              alt="EYC Logo"
+              class="w-8 h-8 object-contain"
+            />
           </div>
 
-          <div class="ml-3">
-            <h1 class="font-bold text-lg text-slate-900">EYC</h1>
-            <p class="text-xs text-slate-500">Attendance System</p>
+          <!-- Consistent Typography -->
+          <div class="ml-3.5 flex flex-col justify-center">
+            <h1 class="font-extrabold text-lg tracking-tight text-indigo-700">
+              EYC
+            </h1>
+            <p
+              class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5"
+            >
+              Attendance
+            </p>
           </div>
-        </div>
+        </a>
 
         <!-- Navigation -->
         <nav class="flex-1 p-4 space-y-2">
@@ -94,7 +113,7 @@
           </p>
 
           <a
-            href="#"
+            href="/admin/settings"
             class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
           >
             <i data-lucide="settings" class="w-5 h-5"></i>

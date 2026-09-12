@@ -4,6 +4,8 @@ const router = express.Router();
 
 const db = require("../config/database");
 
+const adminController = require("../controllers/adminController");
+
 // ============================================================
 // LOGIN PAGE
 // ============================================================
@@ -37,5 +39,14 @@ router.get("/register", async (req, res) => {
 router.get("/admin/dashboard", (req, res) => {
   res.render("admin/dashboard");
 });
+
+// ============================================================
+// ADMIN CAMPUS SETTINGS
+// ============================================================
+router.get("/admin/settings", /* requireAuth, */ adminController.getSettings);
+router.post(
+  "/admin/settings",
+  /* requireAuth, */ adminController.updateSettings,
+);
 
 module.exports = router;
