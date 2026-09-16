@@ -362,6 +362,7 @@ button {
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
   text-align: center;
   font-size: 11.5px;
   font-weight: 600;
@@ -372,13 +373,15 @@ button {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: minmax(40px, 1fr);
   gap: 6px;
   margin-bottom: 16px;
 }
 
 .cal-cell {
   aspect-ratio: 1;
+  width: 100%; /* ADDED: Tells it to smoothly fill the available grid space */
+  max-width: 42px; /* ADDED: Stops the circles from getting massive on iPads/Tablets */
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -393,6 +396,7 @@ button {
 .cal-cell.blank {
   background: transparent;
   border: none;
+  pointer-events: none;
 }
 
 .cal-cell.weekend {
@@ -489,20 +493,23 @@ button {
 
 /* ---------- Stats row ---------- */
 .stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 10px;
-  margin-top: 20px;
+  width: 100%;
+  margin-top: 4px;
 }
 
 .stat-box {
   background: #f9f7f6;
-  border-radius: 12px;
-  padding: 12px 8px;
+  flex: 1; /* Splits the row evenly */
+  min-width: 0; /* Prevents text overflow breaking */
+  border-radius: 18px;
+  padding: 14px 4px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: center;
+  align-items: center;
 }
 
 .stat-value {
@@ -512,7 +519,9 @@ button {
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
   color: #7c8a9c;
 }
 
@@ -1138,4 +1147,23 @@ button {
 .calendar-day:active,
 .day-cell:active {
   transform: scale(0.96); /* Softer click compression */
+}
+
+/* ---------- QR Scanner Video Feed ---------- */
+
+/* Clean up the injected QR scanner video feed */
+#qrScanner video,
+.qr-mount video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; /* Forces the video to fill the box gracefully without distorting */
+  border-radius: 16px !important; /* Matches your card rounding */
+}
+
+/* Optional: Ensure the container wrapping the scanner keeps a clean frame */
+#qrScanner,
+.qr-mount {
+  margin-bottom: 16px;
+  overflow: hidden;
+  border-radius: 16px;
 }
