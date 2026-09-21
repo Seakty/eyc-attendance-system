@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>EYC Attendance - Staff</title>
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="/images/favicon.ico"
+  />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#4f46e5",
+            secondary: "#6366f1",
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
+
+    .modal-backdrop {
+      background: rgba(15, 23, 42, 0.45);
+    }
+    @keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-footer {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+  </style>
+</head>
+
+<body class="bg-[#F9F7F6] text-slate-800">
+
+  <div class="flex min-h-screen">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside
+      class="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col"
+    >
+
+      <!-- Logo -->
+
+      <a
+        href="/admin/dashboard"
+        class="h-20 flex items-center px-6 border-b border-slate-200 hover:bg-slate-50"
+      >
+
+        <div
+          class="relative flex items-center justify-center p-1.5 bg-white rounded-xl border border-slate-200 shadow-sm"
+        >
+          <img
+            src="/images/eyc-logo.png"
+            alt="EYC Logo"
+            class="w-8 h-8 object-contain"
+          />
+        </div>
+
+        <div class="ml-3.5 flex flex-col justify-center">
+
+          <h1
+            class="font-extrabold text-lg tracking-tight text-indigo-700"
+          >
+            EYC
+          </h1>
+
+          <p
+            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5"
+          >
+            Attendance
+          </p>
+
+        </div>
+
+      </a>
+
+
+      <!-- Navigation -->
+
+      <nav class="flex-1 p-4 space-y-2">
+
+        <p
+          class="px-3 pt-2 pb-3 text-xs font-semibold text-slate-400 uppercase"
+        >
+          Main Menu
+        </p>
+
+        <a
+          href="/admin/dashboard"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+        >
+          <i
+            data-lucide="layout-dashboard"
+            class="w-5 h-5"
+          ></i>
+          Dashboard
+        </a>
+
+
+        <!-- ACTIVE STAFF -->
+
+        <a
+          href="/admin/staff"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-semibold"
+        >
+          <i
+            data-lucide="users"
+            class="w-5 h-5"
+          ></i>
+
+          Staff
+        </a>
+
+
+        <a
+          href="#"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+        >
+          <i
+            data-lucide="calendar-check"
+            class="w-5 h-5"
+          ></i>
+
+          Attendance
+        </a>
+
+
+        <a
+          href="#"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+        >
+          <i
+            data-lucide="file-text"
+            class="w-5 h-5"
+          ></i>
+
+          Reports
+        </a>
+
+
+        <p
+          class="px-3 pt-7 pb-3 text-xs font-semibold text-slate-400 uppercase"
+        >
+          System
+        </p>
+
+
+        <a
+          href="/admin/settings"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100"
+        >
+          <i
+            data-lucide="settings"
+            class="w-5 h-5"
+          ></i>
+
+          Settings
+        </a>
+
+      </nav>
+
+
+      <!-- User -->
+
+      <div class="p-4 border-t border-slate-200">
+
+        <div
+          class="flex items-center gap-3 p-3 rounded-xl bg-slate-50"
+        >
+
+          <div
+            class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold"
+          >
+            AD
+          </div>
+
+          <div class="flex-1 min-w-0">
+
+            <p class="font-semibold text-sm truncate">
+              Admin
+            </p>
+
+            <p class="text-xs text-slate-500 truncate">
+              Administrator
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="flex-1 min-w-0">
+
+      <!-- HEADER -->
+
+      <header
+        class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-5 lg:px-8"
+      >
+
+        <div>
+
+          <h2 class="text-xl font-bold text-slate-900">
+            Staff
+          </h2>
+
+          <p class="text-sm text-slate-500">
+            Manage registered staff members
+          </p>
+
+        </div>
+      </header>
+
+
+      <!-- PAGE -->
+
+      <div class="p-5 lg:p-8 space-y-6">
+
+
+        <!-- TITLE -->
+
+        <div>
+
+          <h1 class="text-2xl font-bold text-blue-950 text-5xl text-underline">
+            Staff Management
+          </h1>
+
+          <!-- <p class="text-blue-900 mt-0.5">
+            View and manage registered EYC staff accounts.
+          </p> -->
+
+        </div>
+
+
+        <!-- ALERT -->
+
+        <div
+          id="alertBox"
+          class="hidden rounded-xl px-4 py-3 text-sm font-medium"
+        ></div>
+
+
+        <!-- STAFF CARD -->
+
+        <section
+          class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+        >
+
+          <!-- TABLE HEADER -->
+
+          <div
+            class="p-5 lg:p-6 border-b border-slate-200"
+          >
+
+            <div
+              class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+            >
+
+              <div>
+
+                <h2 class="text-lg font-bold text-slate-900">
+                  Staff Members
+                </h2>
+
+              </div>
+
+
+              <!-- SEARCH -->
+
+              <div class="relative w-full lg:w-80">
+
+                <i
+                  data-lucide="search"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                ></i>
+
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Search staff..."
+                  class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- TABLE -->
+
+          <div class="w-full text-sm border-collapse overflow-x-auto">
+
+           <div class="border border-slate-200  ">
+  <!-- Table Container with Borders -->
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse">
+      <!-- Table Header -->
+      <thead class="bg-slate-100/90 border-b border-slate-200">
+        <tr class="text-left text-xs uppercase font-semibold text-slate-500 divide-x divide-slate-200">
+          <th class="px-6 py-4">Staff</th>
+          <th class="px-6 py-4">Position</th>
+          <th class="px-6 py-4">Campus</th>
+          <th class="px-6 py-4">Phone</th>
+          <th class="px-6 py-4">Status</th>
+          <th class="px-6 py-4 text-right">Action</th>
+        </tr>
+      </thead>
+
+      <!-- Table Body -->
+      <tbody id="staffTable" class="divide-y divide-slate-200">
+        <!-- JS renders rows dynamically here -->
+        <tr class="divide-x divide-slate-200">
+          <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+            <div class="flex flex-col items-center gap-2">
+              <i data-lucide="loader-circle" class="w-6 h-6 animate-spin text-indigo-600"></i>
+              <span>Loading staff...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+          <!-- FOOTER -->
+          <div class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3" >
+            <p class="text-sm text-slate-500">
+              Showing
+              <span
+                id="staffCount"
+                class="font-semibold text-slate-700" > 0</span>
+              staff members
+            </p>
+            <div class="flex gap-2">
+                <button class="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-500 hover:bg-slate-50">
+                     Previous </button>
+                <button class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm">
+                     1   </button>
+                <button class="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">
+                     2   </button>
+                <button class="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50"> 
+                    Next </button>
+              </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+
+  <!-- =====================================================
+       EDIT MODAL
+  ====================================================== -->
+
+  <div
+    id="editModal"
+    class="hidden fixed inset-0 z-50 items-center justify-center p-4 modal-backdrop"
+  >
+
+    <div
+      class="bg-white rounded-2xl shadow-xl w-full max-w-lg"
+    >
+
+      <div
+        class="flex items-center justify-between px-6 py-5 border-b border-slate-200"
+      >
+
+        <div>
+
+          <h2 class="text-lg font-bold text-slate-900">
+            Edit Staff
+          </h2>
+
+          <p class="text-sm text-slate-500">
+            Update staff profile information.
+          </p>
+
+        </div>
+
+        <button
+          onclick="closeEditModal()"
+          class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"
+        >
+
+          <i
+            data-lucide="x"
+            class="w-5 h-5"
+          ></i>
+
+        </button>
+
+      </div>
+
+
+      <form
+        id="editForm"
+        class="p-6 space-y-4"
+      >
+
+        <input
+          type="hidden"
+          id="editStaffId"
+        />
+
+
+        <!-- NAME -->
+
+        <div>
+
+          <label
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+          >
+            Full Name
+          </label>
+
+          <input
+            id="editFullName"
+            type="text"
+            required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+
+        </div>
+
+
+        <!-- POSITION -->
+
+        <div>
+
+          <label
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+          >
+            Position
+          </label>
+
+          <input
+            id="editPosition"
+            type="text"
+            required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+
+        </div>
+
+
+        <!-- CAMPUS -->
+
+        <div>
+
+          <label
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+          >
+            Campus
+          </label>
+
+          <select
+            id="editCampus"
+            required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          ></select>
+
+        </div>
+
+
+        <!-- PHONE -->
+
+        <div>
+
+          <label
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+          >
+            Phone
+          </label>
+
+          <input
+            id="editPhone"
+            type="text"
+            required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+
+        </div>
+
+
+        <!-- BUTTONS -->
+
+        <div class="flex justify-end gap-3 pt-4">
+
+          <button
+            type="button"
+            onclick="closeEditModal()"
+            class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+          >
+            Save Changes
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       PASSWORD MODAL
+  ====================================================== -->
+
+  <div
+    id="passwordModal"
+    class="hidden fixed inset-0 z-50 items-center justify-center p-4 modal-backdrop"
+  >
+
+    <div
+      class="bg-white rounded-2xl shadow-xl w-full max-w-md"
+    >
+
+      <div
+        class="flex items-center justify-between px-6 py-5 border-b border-slate-200"
+      >
+
+        <div>
+
+          <h2 class="text-lg font-bold text-slate-900">
+            Reset Password
+          </h2>
+
+          <p
+            id="passwordStaffName"
+            class="text-sm text-slate-500"
+          ></p>
+
+        </div>
+
+        <button
+          onclick="closePasswordModal()"
+          class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"
+        >
+
+          <i
+            data-lucide="x"
+            class="w-5 h-5"
+          ></i>
+
+        </button>
+
+      </div>
+
+
+      <form
+        id="passwordForm"
+        class="p-6 space-y-4"
+      >
+
+        <input
+          type="hidden"
+          id="passwordStaffId"
+        />
+
+
+        <div>
+
+          <label
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+          >
+            New Password
+          </label>
+
+          <input
+            id="newPassword"
+            type="password"
+            minlength="6"
+            required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Minimum 6 characters"
+          />
+
+        </div>
+
+
+        <div>
+
+          <label
+            class="block text-sm font-semibold text-slate-700 mb-1.5"
+          >
+            Confirm Password
+          </label>
+
+          <input
+            id="confirmPassword"
+            type="password"
+            minlength="6"
+            required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Repeat new password"
+          />
+
+        </div>
+
+
+        <div class="flex justify-end gap-3 pt-4">
+
+          <button
+            type="button"
+            onclick="closePasswordModal()"
+            class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+          >
+            Reset Password
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script>
+
+    lucide.createIcons();
+
+
+    // ======================================================
+    // GLOBAL DATA
+    // ======================================================
+
+    let staffList = [];
+    let campusList = [];
+
+
+    // ======================================================
+    // ALERT
+    // ======================================================
+
+    function showAlert(message, type = "success") {
+
+      const alertBox = document.getElementById("alertBox");
+
+      alertBox.textContent = message;
+
+      alertBox.className =
+        "rounded-xl px-4 py-3 text-sm font-medium";
+
+      if (type === "success") {
+
+        alertBox.classList.add(
+          "bg-emerald-50",
+          "text-emerald-700",
+          "border",
+          "border-emerald-200"
+        );
+
+      } else {
+
+        alertBox.classList.add(
+          "bg-red-50",
+          "text-red-700",
+          "border",
+          "border-red-200"
+        );
+
+      }
+
+      alertBox.classList.remove("hidden");
+
+      setTimeout(() => {
+        alertBox.classList.add("hidden");
+      }, 4000);
+    }
+
+
+    // ======================================================
+    // LOAD STAFF
+    // ======================================================
+
+    async function loadStaff() {
+
+      const table = document.getElementById("staffTable");
+
+      try {
+
+        const response = await fetch("/api/admin/staff");
+
+        if (!response.ok) {
+          throw new Error("Failed to load staff.");
+        }
+
+        const result = await response.json();
+
+        if (result.status !== "success") {
+          throw new Error(result.message || "API returned an error.");
+        }
+
+        staffList = result.data || [];
+        campusList = result.campuses || [];
+
+        renderStaff(staffList);
+
+      } catch (error) {
+
+        console.error(error);
+
+        table.innerHTML = `
+          <tr>
+            <td
+              colspan="6"
+              class="px-6 py-10 text-center text-red-500"
+            >
+              Could not load staff members.
+            </td>
+          </tr>
+        `;
+
+        showAlert(
+          error.message || "Could not load staff members.",
+          "error"
+        );
+      }
+    }
+
+
+    // ======================================================
+    // RENDER STAFF
+    // ======================================================
+
+    function renderStaff(list) {
+
+      const table = document.getElementById("staffTable");
+
+      document.getElementById("staffCount").textContent =
+        list.length;
+
+
+      if (list.length === 0) {
+
+        table.innerHTML = `
+          <tr>
+            <td
+              colspan="6"
+              class="px-6 py-10 text-center text-slate-500"
+            >
+              No staff members found.
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+
+      table.innerHTML = list.map((staff) => {
+
+        const initials = staff.full_name
+          .split(" ")
+          .map((name) => name[0])
+          .join("")
+          .substring(0, 2)
+          .toUpperCase();
+
+
+        const statusClass = staff.is_active
+         ? "bg-emerald-20 text-emerald-700 border-emerald-500/60"
+        : "bg-red-10 text-red-500 border-red-500/60";
+        const dotClass = staff.is_active ? "bg-emerald-500" : "bg-red-500";
+        const statusDot = `
+          <span class="relative flex h-2 w-2 mr-1.5">
+            ${staff.is_active ? '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>' : ''}
+            <span class="relative inline-flex rounded-full h-2 w-2 ${dotClass}"></span>
+          </span>
+        `;      
+        const statusText = `
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusClass}">
+            ${statusDot}
+            ${staff.is_active ? "Active" : "Inactive"}
+          </span>
+        `;
+
+        // const statusText = staff.is_active
+        //   ? "• Active"
+        //   : "• Inactive";
+
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+
+            <td class="px-6 py-4">
+
+              <div class="flex items-center gap-3">
+
+                <div
+                  class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold"
+                >
+                  ${escapeHtml(initials)}
+                </div>
+
+                <div>
+
+                  <p class="font-semibold text-slate-900">
+                    ${escapeHtml(staff.full_name)}
+                  </p>
+
+                  <p class="text-xs text-slate-500">
+                    ID #${staff.id}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <td class="px-6 py-4 text-slate-600">
+              ${escapeHtml(staff.position || "—")}
+            </td>
+
+
+            <td class="px-6 py-4 text-slate-600">
+              ${escapeHtml(staff.campus_name || "—")}
+            </td>
+
+
+            <td class="px-6 py-4 text-slate-600">
+              ${escapeHtml(staff.phone || "—")}
+            </td>
+
+
+            <td class="px-6 py-4">
+
+              <span
+                class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${statusClass}"
+              >
+                ${statusText}
+              </span>
+
+            </td>
+
+
+            <td class="px-6 py-4">
+
+              <div class="flex justify-end gap-2">
+
+                <button
+                  onclick="openEditModal(${staff.id})"
+                  title="Edit"
+                  class="w-9 h-9 rounded-lg border bg-yellow-100 border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 flex items-center justify-center"
+                >
+                  <i
+                    data-lucide="pencil"
+                    class="w-4 h-4"
+                  ></i>
+                </button>
+
+
+                <button
+                  onclick="openPasswordModal(${staff.id})"
+                  title="Reset Password"
+                  class="w-9 h-9 rounded-lg border bg-indigo-100 border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 flex items-center justify-center"
+                >
+                  <i
+                    data-lucide="key-round"
+                    class="w-4 h-4"
+                  ></i>
+                </button>
+
+
+                ${
+                  staff.is_active
+
+                    ? `
+
+                      <button
+                        onclick="deactivateStaff(${staff.id})"
+                        title="Deactivate"
+                        class="w-9 h-9 rounded-lg border bg-red-100 border-red-200 text-red-500 hover:text-red-600 hover:bg-red-50 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="user-x"
+                          class="w-4 h-4"
+                        ></i>
+                      </button>
+
+                    `
+
+                    : `
+
+                      <button
+                        onclick="activateStaff(${staff.id})"
+                        title="Activate"
+                        class="w-9 h-9 rounded-lg border bg-emerald-100 border-emerald-200 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="user-check"
+                          class="w-4 h-4"
+                        ></i>
+                      </button>
+
+                    `
+                }
+
+              </div>
+
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+
+
+      lucide.createIcons();
+    }
+
+
+    // ======================================================
+    // SEARCH
+    // ======================================================
+
+    document
+      .getElementById("searchInput")
+      .addEventListener("input", function () {
+
+        const search = this.value
+          .trim()
+          .toLowerCase();
+
+
+        const filtered = staffList.filter((staff) => {
+
+          return (
+
+            staff.full_name
+              .toLowerCase()
+              .includes(search)
+
+            ||
+
+            (staff.position || "")
+              .toLowerCase()
+              .includes(search)
+
+            ||
+
+            (staff.campus_name || "")
+              .toLowerCase()
+              .includes(search)
+
+            ||
+
+            (staff.phone || "")
+              .toLowerCase()
+              .includes(search)
+
+          );
+
+        });
+
+
+        renderStaff(filtered);
+
+      });
+
+
+    // ======================================================
+    // EDIT MODAL
+    // ======================================================
+
+    function openEditModal(id) {
+
+      const staff = staffList.find(
+        (item) => Number(item.id) === Number(id)
+      );
+
+      if (!staff) {
+        showAlert("Staff member not found.", "error");
+        return;
+      }
+
+
+      document.getElementById("editStaffId").value =
+        staff.id;
+
+      document.getElementById("editFullName").value =
+        staff.full_name || "";
+
+      document.getElementById("editPosition").value =
+        staff.position || "";
+
+      document.getElementById("editPhone").value =
+        staff.phone || "";
+
+
+      const campusSelect =
+        document.getElementById("editCampus");
+
+
+      campusSelect.innerHTML =
+        campusList.map((campus) => {
+
+          const selected =
+            Number(campus.id) === Number(staff.campus_id)
+              ? "selected"
+              : "";
+
+          return `
+            <option
+              value="${campus.id}"
+              ${selected}
+            >
+              ${escapeHtml(campus.name)}
+            </option>
+          `;
+
+        }).join("");
+
+
+      const modal =
+        document.getElementById("editModal");
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+
+      lucide.createIcons();
+    }
+
+
+    function closeEditModal() {
+
+      const modal =
+        document.getElementById("editModal");
+
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+
+    }
+
+
+    // ======================================================
+    // SAVE EDIT
+    // ======================================================
+
+    document
+      .getElementById("editForm")
+      .addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+
+        const id =
+          document.getElementById("editStaffId").value;
+
+
+        const body = {
+
+          full_name:
+            document.getElementById("editFullName").value.trim(),
+
+          position:
+            document.getElementById("editPosition").value.trim(),
+
+          campus_id:
+            Number(document.getElementById("editCampus").value),
+
+          phone:
+            document.getElementById("editPhone").value.trim(),
+
+        };
+
+
+        try {
+
+          const response = await fetch(
+            `/api/admin/staff/${id}`,
+            {
+              method: "PUT",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify(body),
+            }
+          );
+
+
+          const result = await response.json();
+
+
+          if (!response.ok || result.status !== "success") {
+
+            throw new Error(
+              result.message || "Could not update staff."
+            );
+
+          }
+
+
+          closeEditModal();
+
+          showAlert(
+            "Staff profile updated successfully."
+          );
+
+          await loadStaff();
+
+        } catch (error) {
+
+          console.error(error);
+
+          showAlert(
+            error.message || "Could not update staff.",
+            "error"
+          );
+
+        }
+
+      });
+
+
+    // ======================================================
+    // PASSWORD MODAL
+    // ======================================================
+
+    function openPasswordModal(id) {
+
+      const staff = staffList.find(
+        (item) => Number(item.id) === Number(id)
+      );
+
+      if (!staff) {
+        showAlert("Staff member not found.", "error");
+        return;
+      }
+
+
+      document.getElementById("passwordStaffId").value =
+        staff.id;
+
+
+      document.getElementById("passwordStaffName").textContent =
+        `Set a new password for ${staff.full_name}`;
+
+
+      document.getElementById("newPassword").value = "";
+
+      document.getElementById("confirmPassword").value = "";
+
+
+      const modal =
+        document.getElementById("passwordModal");
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+    }
+
+
+    function closePasswordModal() {
+
+      const modal =
+        document.getElementById("passwordModal");
+
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+
+    }
+
+
+    // ======================================================
+    // RESET PASSWORD
+    // ======================================================
+
+    document
+      .getElementById("passwordForm")
+      .addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+
+        const id =
+          document.getElementById("passwordStaffId").value;
+
+
+        const password =
+          document.getElementById("newPassword").value;
+
+
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+
+        if (password !== confirmPassword) {
+
+          showAlert(
+            "Passwords do not match.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        try {
+
+          const response = await fetch(
+            `/api/admin/staff/${id}/reset-password`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify({
+                new_password: password,
+              }),
+            }
+          );
+
+
+          const result =
+            await response.json();
+
+
+          if (
+            !response.ok ||
+            result.status !== "success"
+          ) {
+
+            throw new Error(
+              result.message ||
+              "Could not reset password."
+            );
+
+          }
+
+
+          closePasswordModal();
+
+          showAlert(
+            "Password reset successfully."
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+          showAlert(
+            error.message ||
+            "Could not reset password.",
+            "error"
+          );
+
+        }
+
+      });
+
+
+    // ======================================================
+    // DEACTIVATE
+    // ======================================================
+
+    async function deactivateStaff(id) {
+
+      const staff =
+        staffList.find(
+          (item) =>
+            Number(item.id) === Number(id)
+        );
+
+
+      if (!staff) return;
+
+
+      const confirmed =
+        confirm(
+          `Deactivate ${staff.full_name}'s account?`
+        );
+
+
+      if (!confirmed) return;
+
+
+      try {
+
+        const response =
+          await fetch(
+            `/api/admin/staff/${id}/deactivate`,
+            {
+              method: "PATCH",
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          result.status !== "success"
+        ) {
+
+          throw new Error(
+            result.message ||
+            "Could not deactivate staff."
+          );
+
+        }
+
+
+        showAlert(
+          `${staff.full_name} has been deactivated.`
+        );
+
+
+        await loadStaff();
+
+      } catch (error) {
+
+        console.error(error);
+
+        showAlert(
+          error.message ||
+          "Could not deactivate staff.",
+          "error"
+        );
+
+      }
+
+    }
+
+
+    // ======================================================
+    // ACTIVATE
+    // ======================================================
+    async function activateStaff(id) {
+      const staff =
+        staffList.find(
+          (item) =>
+            Number(item.id) === Number(id)
+        );
+      if (!staff) return;
+      const confirmed =
+        confirm(
+          `Reactivate ${staff.full_name}'s account?`
+        );
+      if (!confirmed) return;
+      try {
+        const response =
+          await fetch(
+            `/api/admin/staff/${id}/activate`,
+            {
+              method: "PATCH",
+            }
+          );
+        const result =
+          await response.json();
+        if (
+          !response.ok ||
+          result.status !== "success"
+        ) {
+
+          throw new Error(
+            result.message ||
+            "Could not activate staff."
+          );
+        }
+        showAlert(
+          `${staff.full_name} has been reactivated.`
+        );
+        await loadStaff();
+      } catch (error) {
+        console.error(error);
+        showAlert(
+          error.message ||
+          "Could not activate staff.",
+          "error"
+        );
+      }
+    }
+  
+    // ======================================================
+    // HTML ESCAPE
+    // ======================================================
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    }
+    // ======================================================
+    // INITIAL LOAD
+    // ======================================================
+    loadStaff();
+
+  </script>
+<a href="#" class="transition-transform duration-200 hover:-translate-y-1 hover:text-indigo-600">
+  <i data-lucide="github"></i>
+</a>
+<div class="flex items-center gap-2 text-xs text-slate-400">
+  <span class="relative flex h-2 w-2">
+    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+  </span>
+  Live data
+</div>
+<footer class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-[length:200%_200%] animate-[gradient_6s_ease_infinite] p-6 text-white text-center">
+  <p>© 2026 EYC Attendance System</p>
+</footer>
+</body>
+</html>
