@@ -1,4 +1,5 @@
 const db = require("../config/database");
+const QRCode = require("qrcode");
 
 /**
  * GET /api/admin/summary
@@ -108,12 +109,6 @@ async function getTodayAttendance(req, res) {
   }
 }
 
-<<<<<<< HEAD
-module.exports = {
-  getAttendanceSummary,
-  getTodayAttendance,
-};
-=======
 /**
  * GET /admin/settings
  * Renders campus settings with initial values. QR code is set to null 
@@ -199,4 +194,3 @@ module.exports = {
   getSettings,
   updateSettings,
 };
->>>>>>> 9bee630 (feat(admin): update campus settings with Leaflet map, GPS locate button, and DB persistence)
