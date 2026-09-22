@@ -12,6 +12,12 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Leaflet Map & Geosearch CSS/JS (Free, No API Key Required) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.css" />
+  <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.umd.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -36,8 +42,28 @@
       font-family: "Inter", sans-serif;
     }
 
-    /* Print styling rules */
+    #map {
+      z-index: 1;
+    }
+
+    .leaflet-control-geosearch form {
+      border-radius: 12px !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    }
+
     @media print {
+<<<<<<< HEAD
+=======
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      @page {
+        margin: 0; 
+      }
+>>>>>>> 9bee630 (feat(admin): update campus settings with Leaflet map, GPS locate button, and DB persistence)
       body * {
         visibility: hidden;
       }
@@ -64,8 +90,9 @@
 
   <div class="flex min-h-screen">
     
-    <!-- ================= SIDEBAR ================= -->
+    <!-- SIDEBAR -->
     <aside class="no-print hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col">
+<<<<<<< HEAD
       <!-- Logo Header -->
       <div class="h-20 flex items-center px-6 border-b border-slate-200">
         <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
@@ -76,6 +103,22 @@
           <p class="text-xs text-slate-500">Attendance System</p>
         </div>
       </div>
+=======
+      <a href="/admin/dashboard" class="h-20 flex items-center px-6 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
+        <div class="relative flex items-center justify-center p-1.5 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <img src="/images/eyc-logo.png" alt="EYC Logo" class="w-8 h-8 object-contain" />
+        </div>
+        
+        <div class="ml-3.5 flex flex-col justify-center">
+          <h1 class="font-extrabold text-lg tracking-tight text-indigo-700">
+            EYC
+          </h1>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+            Attendance
+          </p>
+        </div>
+      </a>
+>>>>>>> 9bee630 (feat(admin): update campus settings with Leaflet map, GPS locate button, and DB persistence)
 
       <!-- Navigation -->
       <nav class="flex-1 p-4 space-y-2">
@@ -127,10 +170,9 @@
       </div>
     </aside>
 
-    <!-- ================= MAIN CONTENT ================= -->
+    <!-- MAIN CONTENT -->
     <main class="flex-1 min-w-0">
       
-      <!-- Top Navbar Header -->
       <header class="no-print h-20 bg-white border-b border-slate-200 flex items-center justify-between px-5 lg:px-8">
         <div>
           <h2 class="text-xl font-bold text-slate-900">Campus Settings</h2>
@@ -147,7 +189,7 @@
 
       <div class="p-5 lg:p-8 space-y-8 max-w-4xl mx-auto">
 
-        <!-- Main Settings Form Card -->
+        <!-- Form Card -->
         <div class="no-print bg-white border border-slate-200 shadow-sm rounded-2xl p-6 lg:p-8">
           
           <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
@@ -171,13 +213,34 @@
                 type="time"
                 id="late_cutoff_time"
                 name="late_cutoff_time"
-                value="<%= settings.late_cutoff_time || '' %>"
+                value="<%= settings && settings.late_cutoff_time ? settings.late_cutoff_time : '08:15' %>"
                 required
                 class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
               />
             </div>
 
-            <!-- Two Column Grid for Lat/Lng -->
+            <!-- Leaflet Map Container with Locate Button -->
+            <div>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <label class="block text-xs font-semibold text-slate-600 uppercase">
+                  Select Campus Location on Map
+                </label>
+                
+                <!-- GPS Locate Me Button -->
+                <button
+                  type="button"
+                  id="locate-btn"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-semibold transition border border-indigo-200 shadow-sm"
+                >
+                  <i data-lucide="locate-fixed" class="w-4 h-4"></i>
+                  Use My Current GPS Location
+                </button>
+              </div>
+              
+              <div id="map" class="w-full h-80 rounded-xl border border-slate-200 shadow-sm overflow-hidden z-0"></div>
+            </div>
+
+            <!-- Coordinate Input Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <!-- Latitude -->
               <div>
@@ -189,7 +252,7 @@
                   step="any"
                   id="school_lat"
                   name="school_lat"
-                  value="<%= settings.school_lat || '' %>"
+                  value="<%= settings && settings.school_lat ? settings.school_lat : '11.5564' %>"
                   placeholder="e.g. 11.5564"
                   required
                   class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
@@ -206,7 +269,7 @@
                   step="any"
                   id="school_lng"
                   name="school_lng"
-                  value="<%= settings.school_lng || '' %>"
+                  value="<%= settings && settings.school_lng ? settings.school_lng : '104.9282' %>"
                   placeholder="e.g. 104.9282"
                   required
                   class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
@@ -223,7 +286,7 @@
                 type="number"
                 id="gps_radius_meters"
                 name="gps_radius_meters"
-                value="<%= settings.gps_radius_meters || '' %>"
+                value="<%= settings && settings.gps_radius_meters ? settings.gps_radius_meters : '50' %>"
                 placeholder="e.g. 50"
                 required
                 class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
@@ -244,7 +307,6 @@
         <% if (typeof qrCodeUrl !== 'undefined' && qrCodeUrl) { %>
           <div class="space-y-4">
             
-            <!-- Action Buttons -->
             <div class="no-print flex flex-col sm:flex-row gap-3 justify-end">
               <button
                 onclick="window.print()"
@@ -264,7 +326,6 @@
               </a>
             </div>
 
-            <!-- Printable Poster Container -->
             <div id="printable-poster" class="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center space-y-6">
               <div class="flex justify-center items-center gap-3">
                 <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">
@@ -296,7 +357,6 @@
           </div>
         <% } %>
 
-        <!-- Footer -->
         <p class="no-print text-center text-xs text-slate-400 pt-4">
           © <%= new Date().getFullYear() %> Empowering Youth in Cambodia (EYC)
         </p>
@@ -307,6 +367,103 @@
 
   <script>
     lucide.createIcons();
+
+    // Map Initialization
+    document.addEventListener("DOMContentLoaded", function () {
+      const latInput = document.getElementById('school_lat');
+      const lngInput = document.getElementById('school_lng');
+      const locateBtn = document.getElementById('locate-btn');
+
+      const defaultLat = parseFloat(latInput.value) || 11.5564;
+      const defaultLng = parseFloat(lngInput.value) || 104.9282;
+
+      const map = L.map('map').setView([defaultLat, defaultLng], 15);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      const marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+      function updateInputs(lat, lng) {
+        latInput.value = parseFloat(lat).toFixed(7);
+        lngInput.value = parseFloat(lng).toFixed(7);
+      }
+
+      marker.on('dragend', function (e) {
+        const pos = e.target.getLatLng();
+        updateInputs(pos.lat, pos.lng);
+      });
+
+      map.on('click', function (e) {
+        marker.setLatLng(e.latlng);
+        updateInputs(e.latlng.lat, e.latlng.lng);
+      });
+
+      const provider = new GeoSearch.OpenStreetMapProvider();
+      const searchControl = new GeoSearch.GeoSearchControl({
+        provider: provider,
+        style: 'bar',
+        showMarker: false,
+        showPopup: false,
+        autoClose: true,
+        retainZoomLevel: false,
+        animateZoom: true,
+        keepResult: true,
+        searchLabel: 'Search campus, street, or area...',
+      });
+
+      map.addControl(searchControl);
+
+      map.on('geosearch/showlocation', function (result) {
+        const { x, y } = result.location;
+        marker.setLatLng([y, x]);
+        updateInputs(y, x);
+      });
+
+      // Browser GPS Geolocation Handler
+      locateBtn.addEventListener('click', function () {
+        if ("geolocation" in navigator) {
+          locateBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Detecting Location...`;
+          lucide.createIcons();
+
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+
+              marker.setLatLng([lat, lng]);
+              map.setView([lat, lng], 17);
+              updateInputs(lat, lng);
+
+              locateBtn.innerHTML = `<i data-lucide="locate-fixed" class="w-4 h-4"></i> Use My Current GPS Location`;
+              lucide.createIcons();
+            },
+            function (error) {
+              alert("Could not detect location. Please enable location permissions in your browser.");
+              locateBtn.innerHTML = `<i data-lucide="locate-fixed" class="w-4 h-4"></i> Use My Current GPS Location`;
+              lucide.createIcons();
+            },
+            { enableHighAccuracy: true }
+          );
+        } else {
+          alert("Geolocation is not supported by your browser.");
+        }
+      });
+
+      function syncMapFromInputs() {
+        const lat = parseFloat(latInput.value);
+        const lng = parseFloat(lngInput.value);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          marker.setLatLng([lat, lng]);
+          map.panTo([lat, lng]);
+        }
+      }
+
+      latInput.addEventListener('change', syncMapFromInputs);
+      lngInput.addEventListener('change', syncMapFromInputs);
+    });
   </script>
 </body>
 </html>

@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS campuses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     late_cutoff_time TIME NOT NULL DEFAULT '08:15:00',
-    school_lat DECIMAL(10, 8) NOT NULL,
-    school_lng DECIMAL(11, 8) NOT NULL,
-    gps_radius_meters INT NOT NULL DEFAULT 50,
+    school_lat DECIMAL(10, 7) NOT NULL DEFAULT 11.5564000,
+    school_lng DECIMAL(11, 7) NOT NULL DEFAULT 104.9282000,
+    gps_radius_meters INT NOT NULL DEFAULT 100,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS strikes (
 -- Replace with real campus names/coordinates.
 -- ---------------------------------------------------------
 INSERT INTO campuses (name, late_cutoff_time, school_lat, school_lng, gps_radius_meters)
-VALUES ('Main Campus', '08:15:00', 11.5564, 104.9282, 50)
+VALUES ('Main Campus', '08:15:00', 11.5564000, 104.9282000, 50)
 ON DUPLICATE KEY UPDATE
     late_cutoff_time = VALUES(late_cutoff_time),
     school_lat = VALUES(school_lat),
