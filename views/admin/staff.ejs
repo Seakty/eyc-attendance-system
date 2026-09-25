@@ -261,23 +261,18 @@
       <!-- PAGE -->
 
       <div class="p-5 lg:p-8 space-y-6">
-
-
         <!-- TITLE -->
-
-        <div>
+        <!-- <div>
 
           <h1 class="text-2xl font-bold text-blue-950 text-5xl text-underline">
             Staff Management
           </h1>
 
-          <!-- <p class="text-blue-900 mt-0.5">
+          <p class="text-blue-900 mt-0.5">
             View and manage registered EYC staff accounts.
-          </p> -->
+          </p>
 
-        </div>
-
-
+        </div> -->
         <!-- ALERT -->
 
         <div
@@ -393,7 +388,11 @@
           </div>
 
         </section>
-
+<div>
+  <p class="no-print text-center text-xs text-slate-400 pt-4">
+          © <%= new Date().getFullYear() %> Empowering Youth in Cambodia (EYC)
+        </p>
+      </div>
       </div>
 
     </main>
@@ -612,6 +611,11 @@
         id="passwordForm"
         class="p-6 space-y-4"
       >
+     
+      <div
+        id="passwordAlert"
+        class="hidden rounded-xl px-4 py-3 text-sm font-medium"
+      ></div>
 
         <input
           type="hidden"
@@ -917,7 +921,7 @@
                 <button
                   onclick="openEditModal(${staff.id})"
                   title="Edit"
-                  class="w-9 h-9 rounded-lg border bg-yellow-100 border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 flex items-center justify-center"
+                  class="w-9 h-9 rounded-lg border bg-yellow-100 border-slate-200 text-slate-500 hover:text-yellow-600 hover:bg-yellow-50 flex items-center justify-center"
                 >
                   <i
                     data-lucide="pencil"
@@ -1266,13 +1270,18 @@
 
         if (password !== confirmPassword) {
 
-          showAlert(
-            "Passwords do not match.",
-            "error"
-          );
+        const passwordAlert =
+          document.getElementById("passwordAlert");
 
-          return;
-        }
+        passwordAlert.textContent = "Passwords do not match.";
+
+        passwordAlert.className =
+          "rounded-xl px-4 py-3 text-sm font-medium bg-red-50 text-red-700 border border-red-200";
+
+        passwordAlert.classList.remove("hidden");
+
+        return;
+      }
 
 
         try {
@@ -1473,18 +1482,6 @@
     loadStaff();
 
   </script>
-<a href="#" class="transition-transform duration-200 hover:-translate-y-1 hover:text-indigo-600">
-  <i data-lucide="github"></i>
-</a>
-<div class="flex items-center gap-2 text-xs text-slate-400">
-  <span class="relative flex h-2 w-2">
-    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-  </span>
-  Live data
-</div>
-<footer class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-[length:200%_200%] animate-[gradient_6s_ease_infinite] p-6 text-white text-center">
-  <p>© 2026 EYC Attendance System</p>
-</footer>
+
 </body>
 </html>
