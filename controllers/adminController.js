@@ -194,16 +194,17 @@ async function updateSettings(req, res) {
 async function exportAttendanceReport(req, res) {
   try {
     const [rows] = await db.execute(`
-      SELECT 
-        u.full_name,
-        COUNT(CASE WHEN a.status = 'present' THEN 1 END) AS days_present,
-        COUNT(CASE WHEN a.status = 'late' THEN 1 END) AS days_late,
-        COUNT(CASE WHEN a.status = 'absent' THEN 1 END) AS days_absent,
-        COALESCE(SUM(a.strike_count), 0) AS strike_count
-      FROM users u
-      LEFT JOIN attendance a ON u.id = a.user_id
-      WHERE u.role = 'teacher' OR u.role = 'staff'
-      GROUP BY u.id, u.full_name
+      SELECT
+        t.full_name,
+        COUNT(CASE WHEN al.status = 'On-Time' THEN 1 END) AS days_present,
+        COUNT(CASE WHEN al.status = 'Late' THEN 1 END) AS days_late,
+        COUNT(CASE WHEN al.status = 'Absent' THEN 1 END) AS days_absent
+      FROM teachers t
+      LEFT JOIN attendance_logs al
+        ON t.id = al.teacher_id
+      WHERE t.is_active = TRUE
+      GROUP BY t.id, t.full_name
+      ORDER BY t.full_name ASC
     `);
 
     const workbook = await excelService.generateAttendanceReport(rows);
@@ -214,18 +215,19 @@ async function exportAttendanceReport(req, res) {
     );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=Attendance_Report_${Date.now()}.xlsx`,
+      'attachment; filename="attendance_report.xlsx"',
     );
 
     await workbook.xlsx.write(res);
-    res.status(200).end();
+    res.end();
   } catch (error) {
-    console.error("Export Excel error:", error);
-    res.status(500).json({ message: "Server error exporting report" });
+    console.error("Error exporting attendance report:", error);
+    res.status(500).json({
+      message: "Failed to export attendance report",
+      error: error.message,
+    });
   }
 }
-
-
 
 // ============================================================
 // STAFF MANAGEMENT
@@ -285,7 +287,6 @@ async function getStaffList(req, res) {
   }
 }
 
-
 /**
  * PUT /api/admin/staff/:id
  *
@@ -295,12 +296,7 @@ async function updateStaff(req, res) {
   try {
     const staffId = Number(req.params.id);
 
-    const {
-      full_name,
-      position,
-      campus_id,
-      phone,
-    } = req.body;
+    const { full_name, position, campus_id, phone } = req.body;
 
     // Basic validation
     if (!staffId) {
@@ -389,7 +385,6 @@ async function updateStaff(req, res) {
   }
 }
 
-
 /**
  * POST /api/admin/staff/:id/reset-password
  *
@@ -414,10 +409,9 @@ async function resetStaffPassword(req, res) {
       });
     }
 
-    const [staff] = await db.execute(
-      "SELECT id FROM teachers WHERE id = ?",
-      [staffId],
-    );
+    const [staff] = await db.execute("SELECT id FROM teachers WHERE id = ?", [
+      staffId,
+    ]);
 
     if (staff.length === 0) {
       return res.status(404).json({
@@ -450,7 +444,6 @@ async function resetStaffPassword(req, res) {
     });
   }
 }
-
 
 /**
  * PATCH /api/admin/staff/:id/deactivate
@@ -498,7 +491,6 @@ async function deactivateStaff(req, res) {
   }
 }
 
-
 /**
  * PATCH /api/admin/staff/:id/activate
  *
@@ -545,18 +537,19 @@ async function activateStaff(req, res) {
   }
 }
 
-
 module.exports = {
+  // Admin Dashboard management
   getAttendanceSummary,
   getTodayAttendance,
+  // settings management
   getSettings,
-  //staff management
   updateSettings,
+  // Report export
   exportAttendanceReport,
-};
+  // staff management
   getStaffList,
   updateStaff,
   resetStaffPassword,
   deactivateStaff,
-  activateStaff,  
+  activateStaff,
 };
