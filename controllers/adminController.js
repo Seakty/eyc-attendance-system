@@ -1,3 +1,4 @@
+const excelService = require("../services/excelService");
 const db = require("../config/database");
 const QRCode = require("qrcode");
 const bcrypt = require("bcryptjs");
@@ -183,6 +184,44 @@ async function updateSettings(req, res) {
   } catch (error) {
     console.error("Failed to update settings or generate QR:", error);
     res.status(500).send("Internal Server Error");
+  }
+}
+
+/**
+ * GET /api/admin/reports/export
+ * Download monthly attendance summary excel report
+ */
+async function exportAttendanceReport(req, res) {
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        u.full_name,
+        COUNT(CASE WHEN a.status = 'present' THEN 1 END) AS days_present,
+        COUNT(CASE WHEN a.status = 'late' THEN 1 END) AS days_late,
+        COUNT(CASE WHEN a.status = 'absent' THEN 1 END) AS days_absent,
+        COALESCE(SUM(a.strike_count), 0) AS strike_count
+      FROM users u
+      LEFT JOIN attendance a ON u.id = a.user_id
+      WHERE u.role = 'teacher' OR u.role = 'staff'
+      GROUP BY u.id, u.full_name
+    `);
+
+    const workbook = await excelService.generateAttendanceReport(rows);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Attendance_Report_${Date.now()}.xlsx`,
+    );
+
+    await workbook.xlsx.write(res);
+    res.status(200).end();
+  } catch (error) {
+    console.error("Export Excel error:", error);
+    res.status(500).json({ message: "Server error exporting report" });
   }
 }
 
@@ -513,6 +552,8 @@ module.exports = {
   getSettings,
   //staff management
   updateSettings,
+  exportAttendanceReport,
+};
   getStaffList,
   updateStaff,
   resetStaffPassword,
