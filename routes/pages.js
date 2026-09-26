@@ -1,3 +1,5 @@
+
+
 const express = require("express");
 
 const router = express.Router();
@@ -49,4 +51,15 @@ router.post(
   /* requireAuth, */ adminController.updateSettings,
 );
 
+// ============================================================
+// ADMIN STAFF MANAGEMENT
+// ============================================================
+router.get("/admin/staff.ejs",/* requireAuth, */ adminController.getStaffList);
+router.put("/admin/staff/:id", /* requireAuth, */ adminController.updateStaff);
+router.delete("/admin/staff/:id", /* requireAuth, */ adminController.deactivateStaff);
+router.post("/admin/staff/:id/activate", /* requireAuth, */ adminController.activateStaff);
+router.post("/admin/staff/:id/reset-password", /* requireAuth, */ adminController.resetStaffPassword);
+router.get("/admin/staff", (req, res) => {
+  res.render("admin/staff");
+});
 module.exports = router;
