@@ -5,15 +5,14 @@ const router = express.Router();
 const {
   getAttendanceSummary,
   getTodayAttendance,
-  exportAttendanceReport
+  exportAttendanceReport,
 } = require("../controllers/adminController");
 
 // Admin Dashboard APIs
-
 router.get("/summary", getAttendanceSummary);
-
-router.get("/reports/export", exportAttendanceReport);
-
 router.get("/today", getTodayAttendance);
+
+// Admin Reports APIs
+router.get("/reports/export", exportAttendanceReport);
 
 module.exports = router;

@@ -186,11 +186,7 @@ async function updateSettings(req, res) {
   }
 }
 
-module.exports = {
-  getAttendanceSummary,
-  getTodayAttendance,
-
-  /**
+/**
  * GET /api/admin/reports/export
  * Download monthly attendance summary excel report
  */
@@ -213,11 +209,11 @@ async function exportAttendanceReport(req, res) {
 
     res.setHeader(
       "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=Attendance_Report_${Date.now()}.xlsx`
+      `attachment; filename=Attendance_Report_${Date.now()}.xlsx`,
     );
 
     await workbook.xlsx.write(res);
@@ -227,6 +223,11 @@ async function exportAttendanceReport(req, res) {
     res.status(500).json({ message: "Server error exporting report" });
   }
 }
+
+module.exports = {
+  getAttendanceSummary,
+  getTodayAttendance,
   getSettings,
   updateSettings,
+  exportAttendanceReport,
 };
