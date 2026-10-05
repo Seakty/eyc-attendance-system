@@ -125,7 +125,7 @@ async function testGeofence(req, res) {
  * Decodes the QR token, checks the user's daily record, and logs Check-In or Check-Out.
  */
 async function scanAttendance(req, res) {
-  const { qrToken } = req.body;
+  const { qrToken, userLat, userLng } = req.body;
   const userId = req.user?.id;
 
   if (!qrToken) {
@@ -171,7 +171,22 @@ async function scanAttendance(req, res) {
 
     // 2. CHECK-IN LOGIC
     if (rows.length === 0) {
-      const cutoffTimeStr = "08:15:00";
+      // ==========================================
+      // BUG FIX: Fetch live cutoff time from DB!
+      // ==========================================
+      const [campusRows] = await db.execute(
+        "SELECT late_cutoff_time FROM campuses WHERE id = ?",
+        [parsedQR.campusId || 1], // Fallback to 1 if campusId isn't in older QRs
+      );
+
+      let cutoffTimeStr = "08:15:00";
+
+      if (campusRows.length > 0 && campusRows[0].late_cutoff_time) {
+        const dbTime = campusRows[0].late_cutoff_time;
+        // Ensure it has seconds attached for perfect string comparison (HH:mm:ss)
+        cutoffTimeStr = dbTime.length === 5 ? `${dbTime}:00` : dbTime;
+      }
+
       const hours = now.getHours().toString().padStart(2, "0");
       const minutes = now.getMinutes().toString().padStart(2, "0");
       const seconds = now.getSeconds().toString().padStart(2, "0");
@@ -179,9 +194,21 @@ async function scanAttendance(req, res) {
 
       const statusLabel = currentTimeStr > cutoffTimeStr ? "Late" : "On-Time";
 
+      // ==========================================
+      // Save the actual coordinates to the DB!
+      // ==========================================
       await db.execute(
-        "INSERT INTO attendance_logs (teacher_id, date, check_in_at, status, gps_verified) VALUES (?, ?, ?, ?, TRUE)",
-        [userId, todayStr, now, statusLabel],
+        `INSERT INTO attendance_logs 
+        (teacher_id, date, check_in_at, check_in_lat, check_in_lng, status, gps_verified) 
+        VALUES (?, ?, ?, ?, ?, ?, TRUE)`,
+        [
+          userId,
+          todayStr,
+          now,
+          userLat || null, // Save latitude (or NULL if frontend forgot to send it)
+          userLng || null, // Save longitude
+          statusLabel,
+        ],
       );
 
       return res.status(200).json({

@@ -12,6 +12,8 @@ const tg = window.Telegram?.WebApp;
 const token = localStorage.getItem("eyc_auth_token");
 let qrScanner = null;
 let qrScannerStarted = false;
+let currentPhoneLat = null;
+let currentPhoneLng = null;
 
 if (!token) {
   // If no token exists, kick them back to the login page
@@ -131,6 +133,9 @@ function fallbackToBrowserGeolocation(resolve, reject) {
 
 // --- Step B: send coords to backend ---
 async function sendLocationToServer(lat, lng) {
+  currentPhoneLat = lat;
+  currentPhoneLng = lng;
+
   const res = await fetch("/api/attendance/check-location", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -213,7 +218,11 @@ async function scanQrToken(decodedText) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("eyc_auth_token")}`,
       },
-      body: JSON.stringify({ qrToken: decodedText }),
+      body: JSON.stringify({
+        qrToken: decodedText,
+        userLat: currentPhoneLat,
+        userLng: currentPhoneLng,
+      }),
     });
 
     const data = await response.json();
