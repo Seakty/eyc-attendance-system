@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/images/favicon.ico" />
+    <title>EYC Attendance - Reports &amp; Analytics</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4f46e5",
+              secondary: "#6366f1",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="bg-[#F9F7F6] text-slate-800">
+    <div class="flex min-h-screen">
+      <%- include('partials/sidebar', {
+            user: typeof user !== 'undefined' ? user : null,
+            path: typeof path !== 'undefined' ? path : ''
+          }) %>
+
+      <!-- ================= MAIN CONTENT ================= -->
+      <main class="flex-1 min-w-0">
+        <!-- Header -->
+        <header
+          class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-5 lg:px-8"
+        >
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Reports &amp; Analytics
+            </h2>
+            <p class="text-sm text-slate-500">
+              Monthly attendance health across every campus
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Month in view -->
+            <div
+              class="hidden sm:flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-xl"
+            >
+              <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
+
+              <span id="monthLabel" class="text-sm font-medium"
+                ><%= monthLabel %></span
+              >
+            </div>
+
+            <!-- Mobile Menu -->
+            <button
+              class="lg:hidden w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center"
+            >
+              <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </header>
+
+        <div class="p-5 lg:p-8 space-y-8">
+          <!-- ================= PAGE TITLE + CONTROLS ================= -->
+          <div
+            class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">
+                Monthly Overview
+              </h1>
+
+              <p class="text-slate-500 mt-1">
+                <%= monthLabel %> &bull; <%= analytics.totalStaff %> active staff
+                &bull; <%= analytics.workingDays %> working days
+              </p>
+            </div>
+
+            <div
+              class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+            >
+              <!-- Month Picker: reloads the page with ?month=YYYY-MM -->
+              <form
+                action="/admin/reports"
+                method="GET"
+                id="monthForm"
+                class="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 rounded-xl"
+              >
+                <i data-lucide="calendar-range" class="w-4 h-4 text-slate-500"
+                ></i>
+
+                <input
+                  type="month"
+                  id="monthPicker"
+                  name="month"
+                  value="<%= month %>"
+                  onchange="this.form.submit()"
+                  class="bg-transparent border-none outline-none text-sm font-medium text-slate-700 focus:ring-0 p-0"
+                />
+              </form>
+
+              <!-- ADM-04 Excel export, scoped to the selected month -->
+              <a
+                href="<%= exportUrl %>"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-3 rounded-xl transition shadow-sm text-sm flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                Export Excel Report (.xlsx)
+              </a>
+            </div>
+          </div>
+
+          <!-- ================= KPI SUMMARY (4 CARDS) ================= -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <!-- Monthly Attendance Rate -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"
+                >
+                  <i data-lucide="percent" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full"
+                >
+                  Monthly
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Attendance Rate</p>
+
+              <div class="flex items-end gap-1 mt-1">
+                <h3 class="text-3xl font-bold text-slate-900">
+                  <%= analytics.attendanceRate %>%
+                </h3>
+              </div>
+
+              <p class="text-xs text-slate-400 mt-1">
+                <%= analytics.totalPresent %> of <%= analytics.expectedWorkingDays
+                %> expected staff-days
+              </p>
+            </div>
+
+            <!-- Punctuality Index -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"
+                >
+                  <i data-lucide="timer" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full"
+                >
+                  On time
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Punctuality Index</p>
+
+              <div class="flex items-end gap-1 mt-1">
+                <h3 class="text-3xl font-bold text-slate-900">
+                  <%= analytics.punctualityRate %>%
+                </h3>
+              </div>
+
+              <p class="text-xs text-slate-400 mt-1">
+                <%= analytics.totalOnTime %> on-time of <%= analytics.totalScans %>
+                total scans
+              </p>
+            </div>
+
+            <!-- Total Days Present -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"
+                >
+                  <i data-lucide="user-check" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full"
+                >
+                  Scans
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Total Days Present</p>
+
+              <div class="flex items-end gap-2 mt-1">
+                <h3 class="text-3xl font-bold text-slate-900">
+                  <%= analytics.totalPresent %>
+                </h3>
+
+                <span class="text-sm text-blue-600 font-medium mb-1">
+                  +<%= analytics.totalLate %> late
+                </span>
+              </div>
+            </div>
+
+            <!-- Total Unexcused Absences -->
+            <div
+              class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center"
+                >
+                  <i data-lucide="user-x" class="w-6 h-6"></i>
+                </div>
+
+                <span
+                  class="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full"
+                >
+                  Unexcused
+                </span>
+              </div>
+
+              <p class="text-sm text-slate-500 mt-5">Total Absences</p>
+
+              <div class="flex items-end gap-2 mt-1">
+                <h3 class="text-3xl font-bold text-slate-900">
+                  <%= analytics.totalAbsent %>
+                </h3>
+
+                <span class="text-sm text-slate-500 font-medium mb-1">
+                  days
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= VISUAL ANALYTICS ================= -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <!-- Monthly Trend Chart -->
+            <section
+              class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 lg:p-6"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900">
+                    Daily Arrival Trend
+                  </h2>
+
+                  <p class="text-sm text-slate-500 mt-1">
+                    On-time vs. late check-ins per working day (Mon&ndash;Fri),
+                    <%= monthLabel %>
+                  </p>
+                </div>
+
+                <!-- Legend -->
+                <div class="hidden sm:flex items-center gap-4 text-xs">
+                  <span class="flex items-center gap-1.5 text-slate-600">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    On-Time
+                  </span>
+
+                  <span class="flex items-center gap-1.5 text-slate-600">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    Late
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-6 h-80">
+                <canvas id="trendChart"></canvas>
+              </div>
+            </section>
+
+            <!-- Campus Breakdown Chart -->
+            <section
+              class="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6"
+            >
+              <h2 class="text-lg font-bold text-slate-900">
+                Campus Breakdown
+              </h2>
+
+              <p class="text-sm text-slate-500 mt-1">
+                Present days by campus location
+              </p>
+
+              <div class="mt-6 h-64">
+                <canvas id="campusChart"></canvas>
+              </div>
+
+              <!-- Campus legend with health rates -->
+              <ul id="campusLegend" class="mt-6 space-y-3"></ul>
+            </section>
+          </div>
+
+          <!-- ================= STAFF MONTHLY SUMMARY TABLE ================= -->
+          <section
+            class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+          >
+            <div class="p-5 lg:p-6 border-b border-slate-200">
+              <div
+                class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+              >
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900">
+                    Staff Monthly Summary
+                  </h2>
+
+                  <p class="text-sm text-slate-500 mt-1">
+                    Per-teacher attendance and punctuality for <%= monthLabel %>
+                  </p>
+                </div>
+
+                <!-- Search -->
+                <div class="relative w-full lg:w-72">
+                  <i
+                    data-lucide="search"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                  ></i>
+
+                  <input
+                    type="text"
+                    id="staffSearch"
+                    placeholder="Search by teacher or campus..."
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    oninput="filterStaff()"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                  <tr class="text-left text-xs uppercase text-slate-500">
+                    <th class="px-6 py-4 font-semibold">Teacher Name</th>
+                    <th class="px-6 py-4 font-semibold">Campus</th>
+                    <th class="px-6 py-4 font-semibold text-center">
+                      Days Present
+                    </th>
+                    <th class="px-6 py-4 font-semibold text-center">
+                      Days Late
+                    </th>
+                    <th class="px-6 py-4 font-semibold text-center">
+                      Days Absent
+                    </th>
+                    <th class="px-6 py-4 font-semibold">
+                      Punctuality Score
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="staffTable" class="divide-y divide-slate-100">
+                  <% if (teacherBreakdown.length === 0) { %>
+                  <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-slate-500">
+                      No active staff found.
+                    </td>
+                  </tr>
+                  <% } %>
+
+                  <% teacherBreakdown.forEach((teacher) => { %>
+                  <tr
+                    class="hover:bg-slate-50 transition"
+                    data-search="<%= (teacher.teacherName + ' ' + teacher.campusName).toLowerCase() %>"
+                  >
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold"
+                        >
+                          <%= teacher.teacherName.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase() %>
+                        </div>
+
+                        <p class="font-semibold text-slate-900">
+                          <%= teacher.teacherName %>
+                        </p>
+                      </div>
+                    </td>
+
+                    <td class="px-6 py-4 text-slate-600">
+                      <%= teacher.campusName %>
+                    </td>
+
+                    <td
+                      class="px-6 py-4 text-center font-medium text-slate-900"
+                    >
+                      <%= teacher.daysPresent %>
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+                      <span
+                        class="font-medium <%= teacher.daysLate > 0 ? 'text-amber-600' : 'text-slate-400' %>"
+                      >
+                        <%= teacher.daysLate %>
+                      </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+                      <span
+                        class="font-medium <%= teacher.daysAbsent > 0 ? 'text-red-600' : 'text-slate-400' %>"
+                      >
+                        <%= teacher.daysAbsent %>
+                      </span>
+                    </td>
+
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="w-24 h-2 rounded-full bg-slate-100 overflow-hidden"
+                        >
+                          <div
+                            class="h-full rounded-full <%= teacher.punctualityScore >= 90 ? 'bg-emerald-500' : teacher.punctualityScore >= 75 ? 'bg-amber-500' : 'bg-red-500' %>"
+                            style="width: <%= teacher.punctualityScore %>%"
+                          ></div>
+                        </div>
+
+                        <span class="font-semibold text-slate-700 w-14 text-right"
+                          ><%= teacher.punctualityScore %>%</span
+                        >
+                      </div>
+                    </td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              class="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3"
+            >
+              <p class="text-sm text-slate-500">
+                Showing
+                <span id="visibleCount" class="font-semibold text-slate-700"
+                  ><%= teacherBreakdown.length %></span
+                >
+                of
+                <span class="font-semibold text-slate-700"
+                  ><%= teacherBreakdown.length %></span
+                >
+                staff
+              </p>
+
+              <p class="text-xs text-slate-400">
+                Punctuality Score = on-time scans &divide; total scans
+              </p>
+            </div>
+          </section>
+
+          <div class="flex items-center justify-end gap-2 text-xs text-slate-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Data for <%= monthLabel %>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+      // Activate Lucide icons
+      lucide.createIcons();
+
+      // ==========================================
+      // Chart data (server computed, injected as JSON)
+      // "<" is escaped so the payload can never break out of the script tag.
+      // ==========================================
+      const TREND_DATA = JSON.parse(
+        '<%- JSON.stringify(dailyTrend).replace(/</g, "\\u003c") %>',
+      );
+      const CAMPUS_DATA = JSON.parse(
+        '<%- JSON.stringify(campusBreakdown).replace(/</g, "\\u003c") %>',
+      );
+
+      // ==========================================
+      // Logout (same behaviour as the dashboard)
+      // ==========================================
+      async function logout() {
+        try {
+          await fetch("/api/auth/logout", { method: "POST" });
+        } finally {
+          localStorage.removeItem("eyc_auth_token");
+          localStorage.removeItem("eyc_user");
+          window.location.href = "/login";
+        }
+      }
+
+      // ==========================================
+      // Lightweight staff filter (name or campus)
+      // ==========================================
+      function filterStaff() {
+        const query = document
+          .getElementById("staffSearch")
+          .value.trim()
+          .toLowerCase();
+
+        const rows = document.getElementById("staffTable").rows;
+        let visible = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+
+          // The empty-state row has no data-search attribute
+          if (!row.dataset.search) continue;
+
+          const matches = row.dataset.search.includes(query);
+          row.style.display = matches ? "" : "none";
+
+          if (matches) visible += 1;
+        }
+
+        document.getElementById("visibleCount").textContent = visible;
+      }
+
+      // ==========================================
+      // Chart.js defaults
+      // ==========================================
+      Chart.defaults.font.family = "Inter, sans-serif";
+      Chart.defaults.color = "#64748b";
+
+      // ==========================================
+      // 1. Daily On-Time vs. Late trend (stacked bar)
+      // ==========================================
+      const trendChart = new Chart(document.getElementById("trendChart"), {
+        type: "bar",
+        data: {
+          labels: TREND_DATA.map((day) => day.dayOfMonth),
+          datasets: [
+            {
+              label: "On-Time",
+              data: TREND_DATA.map((day) => day.onTime),
+              backgroundColor: "#10b981",
+              borderRadius: 4,
+              borderSkipped: false,
+              stack: "arrivals",
+            },
+            {
+              label: "Late",
+              data: TREND_DATA.map((day) => day.late),
+              backgroundColor: "#f59e0b",
+              borderRadius: 4,
+              borderSkipped: false,
+              stack: "arrivals",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#0f172a",
+              padding: 12,
+              cornerRadius: 10,
+              callbacks: {
+                afterBody: (items) => {
+                  const day = TREND_DATA[items[0].dataIndex];
+                  const lines = [];
+                  lines.push("Date: " + day.date);
+                  if (day.absent > 0) lines.push("Absent: " + day.absent);
+                  return lines;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                autoSkip: true,
+                maxRotation: 0,
+                font: { size: 11 },
+              },
+              title: {
+                display: true,
+                text: "Day of month",
+                font: { size: 11, weight: "600" },
+              },
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: "#f1f5f9" },
+              ticks: {
+                precision: 0,
+                font: { size: 11 },
+              },
+              title: {
+                display: true,
+                text: "Staff",
+                font: { size: 11, weight: "600" },
+              },
+            },
+          },
+        },
+      });
+
+      // ==========================================
+      // 2. Campus breakdown (doughnut)
+      // ==========================================
+      const CAMPUS_COLORS = [
+        "#4f46e5",
+        "#10b981",
+        "#f59e0b",
+        "#ef4444",
+        "#0ea5e9",
+        "#8b5cf6",
+      ];
+
+      const campusChart = new Chart(document.getElementById("campusChart"), {
+        type: "doughnut",
+        data: {
+          labels: CAMPUS_DATA.map((campus) => campus.campusName),
+          datasets: [
+            {
+              data: CAMPUS_DATA.map((campus) => campus.daysPresent),
+              backgroundColor: CAMPUS_DATA.map(
+                (campus, index) =>
+                  CAMPUS_COLORS[index % CAMPUS_COLORS.length],
+              ),
+              borderColor: "#ffffff",
+              borderWidth: 3,
+              hoverOffset: 6,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "62%",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#0f172a",
+              padding: 12,
+              cornerRadius: 10,
+              callbacks: {
+                label: (context) => {
+                  const campus = CAMPUS_DATA[context.dataIndex];
+                  return (
+                    " " +
+                    campus.campusName +
+                    ": " +
+                    campus.daysPresent +
+                    " present days (" +
+                    campus.attendanceRate +
+                    "% rate)"
+                  );
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // ==========================================
+      // Campus legend (attendance health per campus)
+      // ==========================================
+      function renderCampusLegend() {
+        const list = document.getElementById("campusLegend");
+
+        if (CAMPUS_DATA.length === 0) {
+          list.innerHTML =
+            '<li class="text-sm text-slate-400">No campus data available.</li>';
+          return;
+        }
+
+        list.innerHTML = CAMPUS_DATA.map((campus, index) => {
+          const color = CAMPUS_COLORS[index % CAMPUS_COLORS.length];
+
+          return `
+            <li class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span
+                  class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style="background-color: ${color}"
+                ></span>
+
+                <div class="min-w-0">
+                  <p class="font-semibold text-slate-800 text-sm truncate">
+                    ${campus.campusName}
+                  </p>
+
+                  <p class="text-xs text-slate-500">
+                    ${campus.staffCount} staff &bull; ${campus.daysLate} late &bull;
+                    ${campus.daysAbsent} absent
+                  </p>
+                </div>
+              </div>
+
+              <span class="text-sm font-bold text-slate-900 flex-shrink-0">
+                ${campus.attendanceRate}%
+              </span>
+            </li>
+          `;
+        }).join("");
+      }
+
+      renderCampusLegend();
+
+      // Keep charts crisp when the viewport changes
+      window.addEventListener("resize", () => {
+        trendChart.resize();
+        campusChart.resize();
+      });
+    </script>
+  </body>
+</html>

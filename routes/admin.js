@@ -24,6 +24,9 @@ router.get("/summary", getAttendanceSummary);
 router.get("/today", getTodayAttendance);
 
 // Admin Reports APIs
+// GET /api/admin/reports/export[?month=YYYY-MM]  (ADM-04 + optional ADM-05 month filter)
+// The Reports & Analytics PAGE lives at /admin/reports in routes/pages.js,
+// because this router is mounted under /api/admin and guards with requireAdminApi.
 router.get("/reports/export", exportAttendanceReport);
 
 // STAFF APIs
