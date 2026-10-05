@@ -73,7 +73,8 @@ exports.login = async (req, res) => {
       {
         id: user.id,
         phone: user.phone,
-        role: user.position,
+        role: user.role, // 'admin' or 'staff'
+        position: user.position,
         campus_id: user.campus_id,
       },
       process.env.JWT_SECRET || "your_secret_key",
@@ -88,15 +89,29 @@ exports.login = async (req, res) => {
     const campusName =
       campusRows.length > 0 ? campusRows[0].name : "EYC Main Campus";
 
+    // Admins also get a session, so the browser can open /admin/dashboard
+    const isAdmin = user.role === "admin";
+
+    if (isAdmin) {
+      req.session.user = {
+        id: user.id,
+        name: user.full_name,
+        role: "admin",
+      };
+    }
+
     res.json({
       message: "Login successful",
       token,
+      // login.ejs sends the browser to this address after login
+      redirect: isAdmin ? "/admin/dashboard" : "/miniapp/index.html",
       user: {
         id: user.id,
         name: user.full_name,
         fullName: user.full_name,
         phone: user.phone,
         position: user.position,
+        role: user.role,
         campus_id: user.campus_id,
         campusName: campusName,
       },
@@ -104,4 +119,12 @@ exports.login = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Server Error", error: err.message });
   }
+};
+
+// 3. Logout API (POST /api/auth/logout)
+exports.logout = (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.json({ message: "Logged out" });
+  });
 };

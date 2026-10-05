@@ -1,3 +1,4 @@
+const excelService = require("../services/excelService");
 const db = require("../config/database");
 const QRCode = require("qrcode");
 const bcrypt = require("bcryptjs");
@@ -36,7 +37,7 @@ async function getAttendanceSummary(req, res) {
 
         SUM(
           CASE
-            WHEN gps_verified = 0
+            WHEN gps_verified = 0 AND check_in_at IS NOT NULL
             THEN 1
             ELSE 0
           END
@@ -49,6 +50,11 @@ async function getAttendanceSummary(req, res) {
 
     const summary = rows[0];
 
+    // Total active staff (used for the real percentages on the cards)
+    const [staffRows] = await db.execute(
+      "SELECT COUNT(*) AS total_staff FROM teachers WHERE is_active = 1 AND role = 'staff'",
+    );
+
     return res.status(200).json({
       status: "success",
 
@@ -57,6 +63,7 @@ async function getAttendanceSummary(req, res) {
         late: Number(summary.late || 0),
         absent: Number(summary.absent || 0),
         flaggedScans: Number(summary.flagged_scans || 0),
+        totalStaff: Number(staffRows[0].total_staff || 0),
       },
     });
   } catch (error) {
@@ -186,7 +193,47 @@ async function updateSettings(req, res) {
   }
 }
 
+/**
+ * GET /api/admin/reports/export
+ * Download monthly attendance summary excel report
+ */
+async function exportAttendanceReport(req, res) {
+  try {
+    const [rows] = await db.execute(`
+      SELECT
+        t.full_name,
+        COUNT(CASE WHEN al.status = 'On-Time' THEN 1 END) AS days_present,
+        COUNT(CASE WHEN al.status = 'Late' THEN 1 END) AS days_late,
+        COUNT(CASE WHEN al.status = 'Absent' THEN 1 END) AS days_absent
+      FROM teachers t
+      LEFT JOIN attendance_logs al
+        ON t.id = al.teacher_id
+      WHERE t.is_active = TRUE
+      GROUP BY t.id, t.full_name
+      ORDER BY t.full_name ASC
+    `);
 
+    const workbook = await excelService.generateAttendanceReport(rows);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="attendance_report.xlsx"',
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Error exporting attendance report:", error);
+    res.status(500).json({
+      message: "Failed to export attendance report",
+      error: error.message,
+    });
+  }
+}
 
 // ============================================================
 // STAFF MANAGEMENT
@@ -246,7 +293,6 @@ async function getStaffList(req, res) {
   }
 }
 
-
 /**
  * PUT /api/admin/staff/:id
  *
@@ -256,12 +302,7 @@ async function updateStaff(req, res) {
   try {
     const staffId = Number(req.params.id);
 
-    const {
-      full_name,
-      position,
-      campus_id,
-      phone,
-    } = req.body;
+    const { full_name, position, campus_id, phone } = req.body;
 
     // Basic validation
     if (!staffId) {
@@ -350,7 +391,6 @@ async function updateStaff(req, res) {
   }
 }
 
-
 /**
  * POST /api/admin/staff/:id/reset-password
  *
@@ -375,10 +415,9 @@ async function resetStaffPassword(req, res) {
       });
     }
 
-    const [staff] = await db.execute(
-      "SELECT id FROM teachers WHERE id = ?",
-      [staffId],
-    );
+    const [staff] = await db.execute("SELECT id FROM teachers WHERE id = ?", [
+      staffId,
+    ]);
 
     if (staff.length === 0) {
       return res.status(404).json({
@@ -411,7 +450,6 @@ async function resetStaffPassword(req, res) {
     });
   }
 }
-
 
 /**
  * PATCH /api/admin/staff/:id/deactivate
@@ -459,7 +497,6 @@ async function deactivateStaff(req, res) {
   }
 }
 
-
 /**
  * PATCH /api/admin/staff/:id/activate
  *
@@ -506,16 +543,19 @@ async function activateStaff(req, res) {
   }
 }
 
-
 module.exports = {
+  // Admin Dashboard management
   getAttendanceSummary,
   getTodayAttendance,
+  // settings management
   getSettings,
-  //staff management
   updateSettings,
+  // Report export
+  exportAttendanceReport,
+  // staff management
   getStaffList,
   updateStaff,
   resetStaffPassword,
   deactivateStaff,
-  activateStaff,  
+  activateStaff,
 };

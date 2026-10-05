@@ -1,4 +1,5 @@
 const express = require("express");
+const session = require("express-session");
 require("dotenv").config();
 
 // Import API and View routes
@@ -24,6 +25,20 @@ app.use(
 );
 
 app.use(express.static("public"));
+
+// Session: remembers who is logged in (used to protect the admin pages)
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "change-this-secret-in-env",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
+  }),
+);
 
 // EJS View Engine
 app.set("view engine", "ejs");

@@ -7,12 +7,18 @@ const router = express.Router();
 const db = require("../config/database");
 
 const adminController = require("../controllers/adminController");
+const { requireAdminPage } = require("../middleware/requireAdmin");
 
 // ============================================================
 // LOGIN PAGE
 // ============================================================
 
 router.get("/login", (req, res) => {
+  // Already logged in as admin? Skip the form and go to the dashboard.
+  if (req.session && req.session.user && req.session.user.role === "admin") {
+    return res.redirect("/admin/dashboard");
+  }
+
   res.render("login");
 });
 
@@ -38,17 +44,18 @@ router.get("/register", async (req, res) => {
 // ADMIN DASHBOARD
 // ============================================================
 
-router.get("/admin/dashboard", (req, res) => {
-  res.render("admin/dashboard");
+router.get("/admin/dashboard", requireAdminPage, (req, res) => {
+  res.render("admin/dashboard", { user: req.session.user });
 });
 
 // ============================================================
 // ADMIN CAMPUS SETTINGS
 // ============================================================
-router.get("/admin/settings", /* requireAuth, */ adminController.getSettings);
+router.get("/admin/settings", requireAdminPage, adminController.getSettings);
 router.post(
   "/admin/settings",
-  /* requireAuth, */ adminController.updateSettings,
+  requireAdminPage,
+  adminController.updateSettings,
 );
 
 // ============================================================

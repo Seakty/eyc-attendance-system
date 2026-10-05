@@ -127,16 +127,21 @@
             <div
               class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold"
             >
-              AD
+              <%= user.name.split(" ").map((n) => n[0]).join("").substring(0,
+              2).toUpperCase() %>
             </div>
 
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-sm truncate">Admin</p>
+              <p class="font-semibold text-sm truncate"><%= user.name %></p>
               <p class="text-xs text-slate-500 truncate">Administrator</p>
             </div>
 
-            <button class="text-slate-400 hover:text-slate-700">
-              <i data-lucide="more-vertical" class="w-5 h-5"></i>
+            <button
+              onclick="logout()"
+              title="Log out"
+              class="text-slate-400 hover:text-slate-700"
+            >
+              <i data-lucide="log-out" class="w-5 h-5"></i>
             </button>
           </div>
         </div>
@@ -150,18 +155,26 @@
         >
           <div>
             <h2 class="text-xl font-bold text-slate-900">Dashboard</h2>
-            <p class="text-sm text-slate-500">Welcome back, Admin 👋</p>
+            <p class="text-sm text-slate-500">
+              Welcome back, <%= user.name %> 👋
+            </p>
           </div>
 
           <div class="flex items-center gap-3">
             <!-- Notification -->
             <button
+              id="bellBtn"
+              onclick="goToAttendanceTable()"
+              title="No scans need review"
               class="relative w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-50"
             >
               <i data-lucide="bell" class="w-5 h-5 text-slate-600"></i>
 
+              <!-- Red badge: hidden until there are flagged scans -->
               <span
-                class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"
+                id="bellBadge"
+                style="display: none"
+                class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full items-center justify-center"
               ></span>
             </button>
 
@@ -193,7 +206,7 @@
             >
               <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
 
-              <span class="text-sm font-medium"> August 31, 2026 </span>
+              <span id="todayDate" class="text-sm font-medium"></span>
             </div>
           </div>
 
@@ -225,8 +238,11 @@
                   0
                 </h3>
 
-                <span class="text-sm text-emerald-600 font-medium mb-1">
-                  +8.2%
+                <span
+                  id="presentNote"
+                  class="text-sm text-emerald-600 font-medium mb-1"
+                >
+                  —
                 </span>
               </div>
             </div>
@@ -256,8 +272,11 @@
                   0
                 </h3>
 
-                <span class="text-sm text-amber-600 font-medium mb-1">
-                  3.4%
+                <span
+                  id="lateNote"
+                  class="text-sm text-amber-600 font-medium mb-1"
+                >
+                  —
                 </span>
               </div>
             </div>
@@ -287,8 +306,11 @@
                   0
                 </h3>
 
-                <span class="text-sm text-red-600 font-medium mb-1">
-                  1.8%
+                <span
+                  id="absentNote"
+                  class="text-sm text-red-600 font-medium mb-1"
+                >
+                  —
                 </span>
               </div>
             </div>
@@ -318,8 +340,11 @@
                   0
                 </h3>
 
-                <span class="text-sm text-purple-600 font-medium mb-1">
-                  Needs review
+                <span
+                  id="flaggedNote"
+                  class="text-sm text-purple-600 font-medium mb-1"
+                >
+                  —
                 </span>
               </div>
             </div>
@@ -328,6 +353,7 @@
           <!-- ================= ATTENDANCE TABLE ================= -->
 
           <section
+            id="attendanceSection"
             class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
           >
             <!-- Table Header -->
@@ -447,6 +473,73 @@
       // Activate Lucide icons
       lucide.createIcons();
 
+      // ==========================================
+      // Real date
+      // ==========================================
+      function showTodayDate() {
+        document.getElementById("todayDate").textContent =
+          new Date().toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          });
+      }
+
+      showTodayDate();
+
+      // ==========================================
+      // Logout
+      // ==========================================
+      async function logout() {
+        try {
+          await fetch("/api/auth/logout", { method: "POST" });
+        } finally {
+          localStorage.removeItem("eyc_auth_token");
+          localStorage.removeItem("eyc_user");
+          window.location.href = "/login";
+        }
+      }
+
+      // If the session expired, the API answers 401 -> go back to login
+      function handleUnauthorized(response) {
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return true;
+        }
+        return false;
+      }
+
+      // ==========================================
+      // Notification bell
+      // Shows a red number only when scans need review
+      // ==========================================
+      function updateBell(flaggedCount) {
+        const badge = document.getElementById("bellBadge");
+        const bell = document.getElementById("bellBtn");
+
+        if (flaggedCount > 0) {
+          badge.textContent = flaggedCount > 99 ? "99+" : flaggedCount;
+          badge.style.display = "flex";
+          bell.title = `${flaggedCount} scan(s) need review`;
+        } else {
+          badge.style.display = "none";
+          bell.title = "No scans need review";
+        }
+      }
+
+      // Clicking the bell scrolls down to today's attendance table
+      function goToAttendanceTable() {
+        document
+          .getElementById("attendanceSection")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      // Percentage helper, e.g. pct(2, 8) -> "25%"
+      function pct(part, whole) {
+        if (!whole) return "0%";
+        return Math.round((part / whole) * 1000) / 10 + "%";
+      }
+
       // Search attendance table
       function searchTable() {
         const input = document
@@ -472,6 +565,7 @@
       setInterval(function () {
         console.log("Refreshing attendance data...");
 
+        showTodayDate(); // keeps the date correct if the page stays open past midnight
         loadAttendanceSummary();
         loadTodayAttendance();
       }, 15000);
@@ -483,6 +577,7 @@
       async function loadAttendanceSummary() {
         try {
           const response = await fetch("/api/admin/summary");
+          if (handleUnauthorized(response)) return;
           if (!response.ok) {
             throw new Error("Failed to load attendance summary");
           }
@@ -504,6 +599,21 @@
 
           document.getElementById("flaggedScans").textContent =
             data.flaggedScans;
+
+          // Real notes under each number (no more hard-coded text)
+          document.getElementById("presentNote").textContent =
+            `of ${data.totalStaff} staff`;
+
+          document.getElementById("lateNote").textContent =
+            `${pct(data.late, data.totalPresent)} of present`;
+
+          document.getElementById("absentNote").textContent =
+            `${pct(data.absent, data.totalStaff)} of staff`;
+
+          document.getElementById("flaggedNote").textContent =
+            data.flaggedScans > 0 ? "Needs review" : "All clear";
+
+          updateBell(data.flaggedScans);
         } catch (error) {
           console.error("Could not load attendance summary:", error);
         }
@@ -516,6 +626,8 @@
       async function loadTodayAttendance() {
         try {
           const response = await fetch("/api/admin/today");
+
+          if (handleUnauthorized(response)) return;
 
           if (!response.ok) {
             throw new Error("Failed to load today's attendance");
@@ -575,6 +687,9 @@
                   ? "bg-red-500"
                   : "bg-emerald-500";
 
+            // A flagged scan = the staff checked in, but GPS was not verified
+            const isFlagged = record.check_in_at && !record.gps_verified;
+
             const initials = record.full_name
               .split(" ")
               .map((name) => name[0])
@@ -583,7 +698,7 @@
               .toUpperCase();
 
             table.innerHTML += `
-              <tr class="hover:bg-slate-50 transition">
+              <tr class="hover:bg-slate-50 transition ${isFlagged ? "bg-purple-50/60" : ""}">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
                     <div
@@ -626,6 +741,12 @@
 
                     ${record.status}
                   </span>
+
+                  ${
+                    isFlagged
+                      ? `<p class="text-xs text-purple-600 font-medium mt-1">GPS not verified</p>`
+                      : ""
+                  }
                 </td>
 
                 <td class="px-6 py-4">
