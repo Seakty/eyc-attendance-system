@@ -45,8 +45,17 @@ router.get("/register", async (req, res) => {
 // ============================================================
 
 router.get("/admin/dashboard", requireAdminPage, (req, res) => {
-  res.render("admin/dashboard", { user: req.session.user });
+  res.render("admin/dashboard", {
+    user: req.session.user,
+    path: req.path,
+  });
 });
+
+// ============================================================
+// ADMIN REPORTS & ANALYTICS
+// Supports ?month=YYYY-MM, defaults to the current calendar month.
+// ============================================================
+router.get("/admin/reports", requireAdminPage, adminController.getReportsAnalytics);
 
 // ============================================================
 // ADMIN CAMPUS SETTINGS
@@ -66,7 +75,14 @@ router.put("/admin/staff/:id", /* requireAuth, */ adminController.updateStaff);
 router.delete("/admin/staff/:id", /* requireAuth, */ adminController.deactivateStaff);
 router.post("/admin/staff/:id/activate", /* requireAuth, */ adminController.activateStaff);
 router.post("/admin/staff/:id/reset-password", /* requireAuth, */ adminController.resetStaffPassword);
+// NOTE: /admin/staff is still rendered without requireAdminPage, exactly as
+// before this refactor (pre-existing gap, unchanged on purpose). The sidebar
+// partial falls back to "Admin" when there is no session user, so an
+// anonymous visitor still gets a 200 page and nothing crashes.
 router.get("/admin/staff", (req, res) => {
-  res.render("admin/staff");
+  res.render("admin/staff", {
+    user: req.session.user,
+    path: req.path,
+  });
 });
 module.exports = router;
