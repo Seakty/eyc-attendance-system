@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS teachers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
     position VARCHAR(100) NOT NULL,
+    role ENUM('staff', 'admin') NOT NULL DEFAULT 'staff',  -- who may open the admin dashboard
     campus_id INT NOT NULL,
     phone VARCHAR(20) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,

@@ -37,7 +37,7 @@ async function getAttendanceSummary(req, res) {
 
         SUM(
           CASE
-            WHEN gps_verified = 0
+            WHEN gps_verified = 0 AND check_in_at IS NOT NULL
             THEN 1
             ELSE 0
           END
@@ -50,6 +50,11 @@ async function getAttendanceSummary(req, res) {
 
     const summary = rows[0];
 
+    // Total active staff (used for the real percentages on the cards)
+    const [staffRows] = await db.execute(
+      "SELECT COUNT(*) AS total_staff FROM teachers WHERE is_active = 1 AND role = 'staff'",
+    );
+
     return res.status(200).json({
       status: "success",
 
@@ -58,6 +63,7 @@ async function getAttendanceSummary(req, res) {
         late: Number(summary.late || 0),
         absent: Number(summary.absent || 0),
         flaggedScans: Number(summary.flagged_scans || 0),
+        totalStaff: Number(staffRows[0].total_staff || 0),
       },
     });
   } catch (error) {
