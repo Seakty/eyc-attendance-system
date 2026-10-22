@@ -21,7 +21,7 @@ async function checkLocation(req, res) {
     // from the authenticated teacher instead of trusting
     // the request body.
     const [rows] = await db.execute(
-      "SELECT name, school_lat, school_lng, gps_radius_meters FROM campuses WHERE id = ? AND is_active = TRUE",
+      "SELECT name, latitude, longitude, radius_meters FROM campuses WHERE id = ? AND is_active = TRUE",
       [campusId || 1],
     );
 
@@ -37,9 +37,9 @@ async function checkLocation(req, res) {
     const result = isWithinGeofence(
       lat,
       lng,
-      parseFloat(campus.school_lat),
-      parseFloat(campus.school_lng),
-      campus.gps_radius_meters,
+      parseFloat(campus.latitude),
+      parseFloat(campus.longitude),
+      campus.radius_meters,
     );
 
     return res.status(200).json({
@@ -47,7 +47,7 @@ async function checkLocation(req, res) {
       campus: campus.name,
       isInside: result.isInside,
       distanceMeters: result.distanceMeters,
-      allowedRadiusMeters: campus.gps_radius_meters,
+      allowedRadiusMeters: campus.radius_meters,
     });
   } catch (error) {
     console.error("check-location failed:", error);
@@ -66,7 +66,7 @@ async function checkLocation(req, res) {
 async function testGeofence(req, res) {
   try {
     const [rows] = await db.execute(
-      "SELECT name, school_lat, school_lng, gps_radius_meters FROM campuses WHERE id = 1",
+      "SELECT name, latitude, longitude, radius_meters FROM campuses WHERE id = 1",
     );
 
     if (rows.length === 0) {
@@ -77,9 +77,9 @@ async function testGeofence(req, res) {
 
     const campus = rows[0];
 
-    const schoolLat = parseFloat(campus.school_lat);
-    const schoolLng = parseFloat(campus.school_lng);
-    const radius = campus.gps_radius_meters;
+    const schoolLat = parseFloat(campus.latitude);
+    const schoolLng = parseFloat(campus.longitude);
+    const radius = campus.radius_meters;
 
     const teacherLat = 11.5565;
     const teacherLng = 104.9283;

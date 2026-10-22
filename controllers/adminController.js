@@ -121,87 +121,317 @@ async function getTodayAttendance(req, res) {
 }
 
 // ============================================================
+// CAMPUS SETTINGS — helpers
+// Settings are stored per campus on the `campuses` table
+// (late_cutoff_time, latitude, longitude, radius_meters).
+// ============================================================
+
+const CAMPUS_SETTINGS_COLUMNS =
+  "id, name, late_cutoff_time, latitude, longitude, radius_meters, is_active";
+
+/** Map a raw `campuses` row into the shape the settings page/API uses. */
+function toCampusSettings(row) {
+  return {
+    campus_id: row.id,
+    name: row.name,
+    is_active: Boolean(row.is_active),
+    late_cutoff_time: row.late_cutoff_time
+      ? String(row.late_cutoff_time).substring(0, 5)
+      : "",
+    latitude: Number(row.latitude),
+    longitude: Number(row.longitude),
+    radius_meters: Number(row.radius_meters),
+  };
+}
+
+/** Build the entrance QR payload (carries campusId so check-ins hit the right row). */
+async function generateCampusQr(settings) {
+  const cutoff =
+    settings.late_cutoff_time && settings.late_cutoff_time.length === 5
+      ? `${settings.late_cutoff_time}:00`
+      : settings.late_cutoff_time;
+
+  const qrData = JSON.stringify({
+    campusId: settings.campus_id,
+    type: "eyc_entrance_qr",
+    lat: settings.latitude,
+    lng: settings.longitude,
+    radius: settings.radius_meters,
+    cutoff,
+    timestamp: Date.now(),
+  });
+
+  return QRCode.toDataURL(qrData);
+}
+
+/**
+ * Load every campus plus the one currently selected, ready for rendering.
+ * `selectedCampusId` may be undefined -> first active campus wins.
+ * `qrCodeUrl` may be passed in; otherwise a fresh QR is generated.
+ */
+async function buildSettingsPageData(selectedCampusId, qrCodeUrl = null) {
+  const [rows] = await db.execute(
+    `SELECT ${CAMPUS_SETTINGS_COLUMNS} FROM campuses ORDER BY is_active DESC, name ASC`,
+  );
+
+  if (rows.length === 0) {
+    const error = new Error("No campuses found. Run `npm run db:seed` first.");
+    error.status = 404;
+    throw error;
+  }
+
+  const campuses = rows.map(toCampusSettings);
+  const requestedId = Number(selectedCampusId);
+
+  const settings =
+    campuses.find((campus) => campus.campus_id === requestedId) ||
+    campuses.find((campus) => campus.is_active) ||
+    campuses[0];
+
+  return {
+    campuses,
+    selectedCampusId: settings.campus_id,
+    settings,
+    qrCodeUrl: qrCodeUrl || (await generateCampusQr(settings)),
+  };
+}
+
+/**
+ * Validate the settings payload shared by the JSON API and the classic form.
+ * Returns { value } on success or { errors } on failure.
+ */
+function parseSettingsPayload(body = {}) {
+  const errors = [];
+
+  const campusId = Number(body.campus_id);
+  if (!Number.isInteger(campusId) || campusId <= 0) {
+    errors.push("campus_id is required.");
+  }
+
+  const rawCutoff =
+    body.late_cutoff_time == null ? "" : String(body.late_cutoff_time).trim();
+  if (!/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(rawCutoff)) {
+    errors.push("late_cutoff_time must be in HH:mm or HH:mm:ss format.");
+  }
+
+  const latitude = Number(body.latitude);
+  if (body.latitude === "" || !Number.isFinite(latitude) || Math.abs(latitude) > 90) {
+    errors.push("latitude must be a number between -90 and 90.");
+  }
+
+  const longitude = Number(body.longitude);
+  if (body.longitude === "" || !Number.isFinite(longitude) || Math.abs(longitude) > 180) {
+    errors.push("longitude must be a number between -180 and 180.");
+  }
+
+  const radiusMeters = Number(body.radius_meters);
+  if (
+    body.radius_meters === "" ||
+    !Number.isInteger(radiusMeters) ||
+    radiusMeters < 1 ||
+    radiusMeters > 10000
+  ) {
+    errors.push("radius_meters must be an integer between 1 and 10000.");
+  }
+
+  if (errors.length > 0) return { errors };
+
+  return {
+    value: {
+      campus_id: campusId,
+      late_cutoff_time:
+        rawCutoff.length === 5 ? `${rawCutoff}:00` : rawCutoff,
+      latitude,
+      longitude,
+      radius_meters: radiusMeters,
+    },
+  };
+}
+
+// ============================================================
 // GET /admin/settings
-// Renders the campus settings form with current DB values.
+// Renders the multi-campus settings form with current DB values.
+// Optional ?campus=<id> preselects a campus in the dropdown.
 // ============================================================
 async function getSettings(req, res) {
   try {
-    const [rows] = await db.execute(
-      "SELECT late_cutoff_time, school_lat, school_lng, gps_radius_meters FROM campuses WHERE id = 1",
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).send("Campus not found in database.");
-    }
-
-    const settings = rows[0];
-
-    // Convert time to HH:mm format for the HTML time input if needed
-    if (settings.late_cutoff_time) {
-      settings.late_cutoff_time = settings.late_cutoff_time.substring(0, 5);
-    }
+    const data = await buildSettingsPageData(req.query.campus);
 
     res.render("admin/settings", {
-      settings,
-      qrCodeUrl: null,
+      ...data,
       // Shared sidebar needs both of these
       user: req.session.user,
       path: req.path,
     });
   } catch (error) {
     console.error("Failed to fetch settings:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(error.status || 500).send(error.message || "Internal Server Error");
   }
 }
 
 // ============================================================
-// POST /admin/settings
-// Updates campus settings and regenerates the entrance QR code.
+// POST /admin/settings (classic form fallback)
+// Updates ONE campus's settings (campus_id in the body) and
+// re-renders with a freshly generated entrance QR code.
+// The settings page itself submits to /api/admin/settings.
 // ============================================================
 async function updateSettings(req, res) {
   try {
-    const { late_cutoff_time, school_lat, school_lng, gps_radius_meters } =
-      req.body;
-
-    // 1. Update the database
-    await db.execute(
-      `UPDATE campuses 
-       SET late_cutoff_time = ?, school_lat = ?, school_lng = ?, gps_radius_meters = ? 
-       WHERE id = 1`,
-      [late_cutoff_time, school_lat, school_lng, gps_radius_meters],
-    );
-
-    // 2. Create payload string for the QR code
-    const qrData = JSON.stringify({
-      campusId: 1,
-      type: "eyc_entrance_qr",
-      lat: school_lat,
-      lng: school_lng,
-      radius: gps_radius_meters,
-      cutoff: late_cutoff_time,
-      timestamp: Date.now(),
+    const payload = parseSettingsPayload({
+      ...req.body,
+      // Back-compat with the old field names
+      campus_id: req.body.campus_id || req.body.campusId || 1,
+      latitude: req.body.latitude ?? req.body.school_lat,
+      longitude: req.body.longitude ?? req.body.school_lng,
+      radius_meters: req.body.radius_meters ?? req.body.gps_radius_meters,
     });
 
-    // 3. Generate Data URL for the QR code image
-    const qrCodeUrl = await QRCode.toDataURL(qrData);
+    if (payload.errors) {
+      return res.status(400).send(payload.errors.join(" "));
+    }
 
-    // 4. Render the page with the updated settings & new QR code
-    const settings = {
-      late_cutoff_time,
-      school_lat,
-      school_lng,
-      gps_radius_meters,
-    };
+    const { campus_id, late_cutoff_time, latitude, longitude, radius_meters } =
+      payload.value;
+
+    const [campusRows] = await db.execute(
+      "SELECT id FROM campuses WHERE id = ?",
+      [campus_id],
+    );
+
+    if (campusRows.length === 0) {
+      return res.status(404).send("Campus not found in database.");
+    }
+
+    await db.execute(
+      `UPDATE campuses
+       SET late_cutoff_time = ?, latitude = ?, longitude = ?, radius_meters = ?
+       WHERE id = ?`,
+      [late_cutoff_time, latitude, longitude, radius_meters, campus_id],
+    );
+
+    // Re-read from the DB and regenerate the QR from the saved values
+    const data = await buildSettingsPageData(campus_id);
+
     res.render("admin/settings", {
-      settings,
-      qrCodeUrl,
+      ...data,
       // Shared sidebar needs both of these
       user: req.session.user,
       path: req.path,
     });
   } catch (error) {
     console.error("Failed to update settings or generate QR:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(error.status || 500).send(error.message || "Internal Server Error");
+  }
+}
+
+// ============================================================
+// GET /api/admin/settings/:campusId
+// Returns one campus's saved settings as JSON (used by the
+// campus selector dropdown on the settings page).
+// ============================================================
+async function getCampusSettings(req, res) {
+  try {
+    const campusId = Number(req.params.campusId);
+
+    if (!Number.isInteger(campusId) || campusId <= 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid campus ID.",
+      });
+    }
+
+    const [rows] = await db.execute(
+      `SELECT ${CAMPUS_SETTINGS_COLUMNS} FROM campuses WHERE id = ?`,
+      [campusId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Campus not found.",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      data: toCampusSettings(rows[0]),
+    });
+  } catch (error) {
+    console.error("get-campus-settings failed:", error);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Could not load campus settings.",
+    });
+  }
+}
+
+// ============================================================
+// POST /api/admin/settings
+// Saves settings for ONE campus without touching any other
+// campus row, and regenerates that campus's entrance QR code.
+// Body: { campus_id, late_cutoff_time, latitude, longitude, radius_meters }
+// ============================================================
+async function saveCampusSettings(req, res) {
+  try {
+    const payload = parseSettingsPayload(req.body);
+
+    if (payload.errors) {
+      return res.status(400).json({
+        status: "error",
+        message: payload.errors.join(" "),
+        errors: payload.errors,
+      });
+    }
+
+    const { campus_id, late_cutoff_time, latitude, longitude, radius_meters } =
+      payload.value;
+
+    const [campusRows] = await db.execute(
+      "SELECT id, name FROM campuses WHERE id = ?",
+      [campus_id],
+    );
+
+    if (campusRows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Campus not found.",
+      });
+    }
+
+    // Scoped to a single campus_id -> other campuses are never modified.
+    await db.execute(
+      `UPDATE campuses
+       SET late_cutoff_time = ?, latitude = ?, longitude = ?, radius_meters = ?
+       WHERE id = ?`,
+      [late_cutoff_time, latitude, longitude, radius_meters, campus_id],
+    );
+
+    const settings = {
+      campus_id,
+      name: campusRows[0].name,
+      is_active: true,
+      late_cutoff_time: late_cutoff_time.substring(0, 5),
+      latitude,
+      longitude,
+      radius_meters,
+    };
+
+    const qrCodeUrl = await generateCampusQr(settings);
+
+    return res.status(200).json({
+      status: "success",
+      message: `Settings saved successfully for ${settings.name}`,
+      data: settings,
+      qrCodeUrl,
+    });
+  } catch (error) {
+    console.error("save-campus-settings failed:", error);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Could not save campus settings.",
+    });
   }
 }
 
@@ -925,6 +1155,8 @@ module.exports = {
   // settings management
   getSettings,
   updateSettings,
+  getCampusSettings,
+  saveCampusSettings,
   // Report export
   exportAttendanceReport,
   // Reports & analytics page

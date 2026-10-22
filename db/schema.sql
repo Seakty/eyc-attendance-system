@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS campuses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     late_cutoff_time TIME NOT NULL DEFAULT '08:15:00',
-    school_lat DECIMAL(10, 8) NOT NULL,
-    school_lng DECIMAL(11, 8) NOT NULL,
-    gps_radius_meters INT NOT NULL DEFAULT 50,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    radius_meters INT NOT NULL DEFAULT 50,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -93,19 +93,19 @@ CREATE TABLE IF NOT EXISTS strikes (
 -- script updates the existing row instead of duplicating it.
 -- Replace with real campus names/coordinates.
 -- ---------------------------------------------------------
-INSERT INTO campuses (name, late_cutoff_time, school_lat, school_lng, gps_radius_meters)
+INSERT INTO campuses (name, late_cutoff_time, latitude, longitude, radius_meters)
 VALUES ('Main Campus', '08:15:00', 11.5564, 104.9282, 50)
 ON DUPLICATE KEY UPDATE
     late_cutoff_time = VALUES(late_cutoff_time),
-    school_lat = VALUES(school_lat),
-    school_lng = VALUES(school_lng),
-    gps_radius_meters = VALUES(gps_radius_meters);
+    latitude = VALUES(latitude),
+    longitude = VALUES(longitude),
+    radius_meters = VALUES(radius_meters);
 
 -- Add one INSERT per additional campus, e.g.:
--- INSERT INTO campuses (name, late_cutoff_time, school_lat, school_lng, gps_radius_meters)
+-- INSERT INTO campuses (name, late_cutoff_time, latitude, longitude, radius_meters)
 -- VALUES ('Second Campus', '08:15:00', 0.00000000, 0.00000000, 50)
 -- ON DUPLICATE KEY UPDATE
 --     late_cutoff_time = VALUES(late_cutoff_time),
---     school_lat = VALUES(school_lat),
---     school_lng = VALUES(school_lng),
---     gps_radius_meters = VALUES(gps_radius_meters);
+--     latitude = VALUES(latitude),
+--     longitude = VALUES(longitude),
+--     radius_meters = VALUES(radius_meters);
