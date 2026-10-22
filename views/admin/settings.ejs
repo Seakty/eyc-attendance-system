@@ -12,6 +12,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Leaflet (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <script>
     tailwind.config = {
       theme: {
@@ -34,6 +37,12 @@
   <style>
     body {
       font-family: "Inter", sans-serif;
+    }
+
+    /* Leaflet paints square tiles over the rounded container */
+    #map {
+      overflow: hidden;
+      z-index: 0;
     }
 
     /* Print styling rules */
@@ -72,6 +81,18 @@
 
 <body class="bg-[#F9F7F6] text-slate-800">
 
+  <!-- Toast notification -->
+  <div id="alertBox" class="hidden fixed top-5 right-5 z-[60] max-w-sm rounded-xl px-4 py-3 text-sm font-medium shadow-lg"></div>
+
+  <%
+    const campusList = typeof campuses !== 'undefined' ? campuses : [];
+    const currentSettings = typeof settings !== 'undefined' ? settings : { late_cutoff_time: '', latitude: '', longitude: '', radius_meters: '' };
+    const activeCampusId = typeof selectedCampusId !== 'undefined'
+      ? selectedCampusId
+      : (campusList.length > 0 ? campusList[0].campus_id : 0);
+    const initialQr = typeof qrCodeUrl !== 'undefined' && qrCodeUrl ? qrCodeUrl : '';
+  %>
+
   <div class="flex min-h-screen">
     
     <%- include('../partials/sidebar', {
@@ -86,7 +107,7 @@
       <header class="no-print h-20 bg-white border-b border-slate-200 flex items-center justify-between px-5 lg:px-8">
         <div>
           <h2 class="text-xl font-bold text-slate-900">Campus Settings</h2>
-          <p class="text-sm text-slate-500">Configure parameters & download QR code posters</p>
+          <p class="text-sm text-slate-500">Multi-campus geofence, cutoff times & QR posters</p>
         </div>
 
         <div class="flex items-center gap-3">
@@ -108,12 +129,57 @@
             </div>
             <div>
               <h3 class="text-lg font-bold text-slate-900">Location & Attendance Rules</h3>
-              <p class="text-xs text-slate-500">Update coordinates and cutoff times for attendance check-ins</p>
+              <p class="text-xs text-slate-500">Each campus keeps its own coordinates, radius and cutoff time</p>
             </div>
           </div>
 
-          <form action="/admin/settings" method="POST" class="space-y-6">
-            
+          <form action="/admin/settings" method="POST" id="settingsForm" class="space-y-6">
+
+            <!-- Campus Selector -->
+            <div>
+              <label for="campusSelect" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
+                Campus <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="campusSelect"
+                name="campus_id"
+                required
+                class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
+              >
+                <% campusList.forEach((campus) => { %>
+                  <option
+                    value="<%= campus.campus_id %>"
+                    <%= campus.campus_id === activeCampusId ? 'selected' : '' %>
+                  >
+                    <%= campus.name %><%= campus.is_active ? '' : ' (inactive)' %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Interactive Map -->
+            <div>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
+                <label for="map" class="block text-xs font-semibold text-slate-600 uppercase">
+                  Campus Location Map
+                </label>
+                <button
+                  type="button"
+                  id="locateBtn"
+                  class="inline-flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-xl font-semibold text-xs transition shadow-sm"
+                >
+                  <i data-lucide="locate-fixed" class="w-4 h-4 text-indigo-600"></i>
+                  Use My Current GPS Location
+                </button>
+              </div>
+
+              <p class="text-xs text-slate-400 mb-2">
+                Click anywhere on the map or drag the pin to set the campus coordinates.
+              </p>
+
+              <div id="map" class="h-80 w-full rounded-2xl border border-slate-200 my-4"></div>
+            </div>
+
             <!-- Late Cutoff Time -->
             <div>
               <label for="late_cutoff_time" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
@@ -123,7 +189,7 @@
                 type="time"
                 id="late_cutoff_time"
                 name="late_cutoff_time"
-                value="<%= settings.late_cutoff_time || '' %>"
+                value="<%= currentSettings.late_cutoff_time || '' %>"
                 required
                 class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
               />
@@ -133,15 +199,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <!-- Latitude -->
               <div>
-                <label for="school_lat" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
+                <label for="latitude" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
                   School Latitude <span class="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
                   step="any"
-                  id="school_lat"
-                  name="school_lat"
-                  value="<%= settings.school_lat || '' %>"
+                  id="latitude"
+                  name="latitude"
+                  value="<%= currentSettings.latitude !== '' && currentSettings.latitude !== null && typeof currentSettings.latitude !== 'undefined' ? currentSettings.latitude : '' %>"
                   placeholder="e.g. 11.5564"
                   required
                   class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
@@ -150,15 +216,15 @@
 
               <!-- Longitude -->
               <div>
-                <label for="school_lng" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
+                <label for="longitude" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
                   School Longitude <span class="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
                   step="any"
-                  id="school_lng"
-                  name="school_lng"
-                  value="<%= settings.school_lng || '' %>"
+                  id="longitude"
+                  name="longitude"
+                  value="<%= currentSettings.longitude !== '' && currentSettings.longitude !== null && typeof currentSettings.longitude !== 'undefined' ? currentSettings.longitude : '' %>"
                   placeholder="e.g. 104.9282"
                   required
                   class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
@@ -168,14 +234,17 @@
 
             <!-- Allowed GPS Radius -->
             <div>
-              <label for="gps_radius_meters" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
+              <label for="radius_meters" class="block text-xs font-semibold text-slate-600 uppercase mb-2">
                 Allowed GPS Radius (meters) <span class="text-red-500">*</span>
               </label>
               <input
                 type="number"
-                id="gps_radius_meters"
-                name="gps_radius_meters"
-                value="<%= settings.gps_radius_meters || '' %>"
+                id="radius_meters"
+                name="radius_meters"
+                min="1"
+                max="10000"
+                step="1"
+                value="<%= currentSettings.radius_meters || '' %>"
                 placeholder="e.g. 50"
                 required
                 class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm"
@@ -185,72 +254,73 @@
             <!-- Submit Button -->
             <button
               type="submit"
+              id="saveBtn"
               class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition shadow-sm text-sm"
             >
-              Save Settings & Generate QR Code
+              Save Settings &amp; Generate QR Code
             </button>
           </form>
         </div>
 
         <!-- Entrance QR Poster Display Section -->
-        <% if (typeof qrCodeUrl !== 'undefined' && qrCodeUrl) { %>
-          <div class="space-y-4">
-            
-            <!-- Action Buttons -->
-            <div class="no-print flex flex-col sm:flex-row gap-3 justify-end">
-              <button
-                onclick="window.print()"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 shadow-sm"
-              >
-                <i data-lucide="printer" class="w-4 h-4"></i>
-                Print Poster
-              </button>
+        <div id="qrSection" class="<%= initialQr ? '' : 'hidden' %> space-y-4">
+          
+          <!-- Action Buttons -->
+          <div class="no-print flex flex-col sm:flex-row gap-3 justify-end">
+            <button
+              onclick="window.print()"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 shadow-sm"
+            >
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              Print Poster
+            </button>
 
-              <a
-                href="<%= qrCodeUrl %>"
-                download="EYC-Entrance-QR.png"
-                class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 text-center shadow-sm"
-              >
-                <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i>
-                Download Image
-              </a>
-            </div>
-
-            <!-- Printable Poster Container -->
-            <div id="printable-poster" class="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center space-y-6">
-              <div class="flex justify-center items-center gap-3">
-                <div class="p-2 bg-slate-50 rounded-2xl border border-slate-200">
-                  <img src="/images/eyc-logo.png" alt="EYC Logo" class="w-12 h-12 object-contain" />
-                </div>
-                <div class="text-left flex flex-col justify-center">
-                    <h1 class="font-extrabold text-2xl tracking-tight text-slate-900">
-                      EYC
-                    </h1>
-                    <p class="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mt-1">
-                      Empowering Youth
-                    </p>
-                </div>
-              </div>
-
-              <div>
-                <h2 class="text-slate-900 text-2xl font-bold tracking-wide uppercase">ENTRANCE QR CODE</h2>
-                <p class="text-indigo-600 text-sm font-semibold mt-1">Scan to Mark Daily Attendance</p>
-              </div>
-
-              <div class="flex justify-center">
-                <div class="p-4 bg-slate-50 border-2 border-indigo-600 rounded-2xl inline-block shadow-sm">
-                  <img src="<%= qrCodeUrl %>" alt="Entrance QR Code" class="w-64 h-64 object-contain" />
-                </div>
-              </div>
-
-              <div class="max-w-md mx-auto space-y-1">
-                <p class="text-slate-900 font-semibold text-sm">Please open the EYC Telegram App to scan</p>
-                <p class="text-slate-500 text-xs">Align the QR scanner within the frame to record check-in or check-out times.</p>
-              </div>
-            </div>
-
+            <a
+              id="qrDownloadLink"
+              href="<%= initialQr %>"
+              download="EYC-Entrance-QR.png"
+              class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 text-center shadow-sm"
+            >
+              <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i>
+              Download Image
+            </a>
           </div>
-        <% } %>
+
+          <!-- Printable Poster Container -->
+          <div id="printable-poster" class="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center space-y-6">
+            <div class="flex justify-center items-center gap-3">
+              <div class="p-2 bg-slate-50 rounded-2xl border border-slate-200">
+                <img src="/images/eyc-logo.png" alt="EYC Logo" class="w-12 h-12 object-contain" />
+              </div>
+              <div class="text-left flex flex-col justify-center">
+                  <h1 class="font-extrabold text-2xl tracking-tight text-slate-900">
+                    EYC
+                  </h1>
+                  <p class="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mt-1">
+                    Empowering Youth
+                  </p>
+              </div>
+            </div>
+
+            <div>
+              <h2 class="text-slate-900 text-2xl font-bold tracking-wide uppercase">ENTRANCE QR CODE</h2>
+              <p class="text-indigo-600 text-sm font-semibold mt-1">Scan to Mark Daily Attendance</p>
+              <p id="qrCampusName" class="text-slate-500 text-xs font-semibold mt-1 uppercase tracking-wide"><%= currentSettings.name || '' %></p>
+            </div>
+
+            <div class="flex justify-center">
+              <div class="p-4 bg-slate-50 border-2 border-indigo-600 rounded-2xl inline-block shadow-sm">
+                <img id="qrPrintImg" <% if (initialQr) { %>src="<%= initialQr %>"<% } %> alt="Entrance QR Code" class="w-64 h-64 object-contain" />
+              </div>
+            </div>
+
+            <div class="max-w-md mx-auto space-y-1">
+              <p class="text-slate-900 font-semibold text-sm">Please open the EYC Telegram App to scan</p>
+              <p class="text-slate-500 text-xs">Align the QR scanner within the frame to record check-in or check-out times.</p>
+            </div>
+          </div>
+
+        </div>
 
         <!-- Footer -->
         <p class="no-print text-center text-xs text-slate-400 pt-4">
@@ -261,8 +331,276 @@
     </main>
   </div>
 
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script>
-    lucide.createIcons();
+    // Server-rendered page state (campuses + currently selected settings)
+    window.SETTINGS_PAGE = <%- JSON.stringify({
+          campuses: campusList,
+          selectedCampusId: activeCampusId,
+          settings: currentSettings,
+          qrCodeUrl: initialQr,
+        }).replace(/</g, "\\u003c") %>;
+  </script>
+
+  <script>
+    (function () {
+      const pageState = window.SETTINGS_PAGE;
+      const initial = pageState.settings;
+
+      // ---- Elements ----
+      const form = document.getElementById("settingsForm");
+      const campusSelect = document.getElementById("campusSelect");
+      const cutoffInput = document.getElementById("late_cutoff_time");
+      const latInput = document.getElementById("latitude");
+      const lngInput = document.getElementById("longitude");
+      const radiusInput = document.getElementById("radius_meters");
+      const locateBtn = document.getElementById("locateBtn");
+      const saveBtn = document.getElementById("saveBtn");
+
+      // ---- Toast ----
+      function showToast(message, type = "success") {
+        const box = document.getElementById("alertBox");
+        box.textContent = message;
+        box.className =
+          "fixed top-5 right-5 z-[60] max-w-sm rounded-xl px-4 py-3 text-sm font-medium shadow-lg";
+        if (type === "success") {
+          box.classList.add("bg-emerald-50", "text-emerald-700", "border", "border-emerald-200");
+        } else {
+          box.classList.add("bg-red-50", "text-red-700", "border", "border-red-200");
+        }
+        box.classList.remove("hidden");
+        clearTimeout(window.__settingsToastTimer);
+        window.__settingsToastTimer = setTimeout(() => box.classList.add("hidden"), 4000);
+      }
+
+      // ---- Map ----
+      const startLat = Number(initial.latitude) || 11.5564;
+      const startLng = Number(initial.longitude) || 104.9282;
+      const startRadius = Number(initial.radius_meters) || 50;
+
+      const map = L.map("map").setView([startLat, startLng], 16);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      const marker = L.marker([startLat, startLng], { draggable: true }).addTo(map);
+
+      const geofence = L.circle([startLat, startLng], {
+        radius: startRadius,
+        color: "#4f46e5",
+        weight: 2,
+        fillColor: "#6366f1",
+        fillOpacity: 0.12,
+      }).addTo(map);
+
+      window.addEventListener("load", () => setTimeout(() => map.invalidateSize(), 100));
+
+      // ---- Helpers ----
+      function formatCoord(value) {
+        return String(Math.round(Number(value) * 1e8) / 1e8);
+      }
+
+      function readLatitude() {
+        return parseFloat(latInput.value);
+      }
+
+      function readLongitude() {
+        return parseFloat(lngInput.value);
+      }
+
+      function readRadius() {
+        return parseFloat(radiusInput.value);
+      }
+
+      function isValidLatLng(lat, lng) {
+        return (
+          Number.isFinite(lat) &&
+          Number.isFinite(lng) &&
+          Math.abs(lat) <= 90 &&
+          Math.abs(lng) <= 180
+        );
+      }
+
+      function applyPosition(lat, lng, pan) {
+        if (!isValidLatLng(lat, lng)) return;
+        const latlng = L.latLng(lat, lng);
+        marker.setLatLng(latlng);
+        geofence.setLatLng(latlng);
+        if (pan && !map.getBounds().pad(0.15).contains(latlng)) {
+          map.panTo(latlng);
+        }
+      }
+
+      function applyRadius(radius) {
+        if (Number.isFinite(radius) && radius > 0) {
+          geofence.setRadius(radius);
+        }
+      }
+
+      function writeInputsFromLatLng(lat, lng) {
+        latInput.value = formatCoord(lat);
+        lngInput.value = formatCoord(lng);
+      }
+
+      /** Fill the whole form + map from a settings payload (from GET or save response). */
+      function populateForm(data, recenterMap) {
+        if (data.late_cutoff_time) cutoffInput.value = data.late_cutoff_time;
+        latInput.value = formatCoord(data.latitude);
+        lngInput.value = formatCoord(data.longitude);
+        radiusInput.value = data.radius_meters;
+        applyPosition(Number(data.latitude), Number(data.longitude), false);
+        applyRadius(Number(data.radius_meters));
+        if (recenterMap) {
+          map.setView([Number(data.latitude), Number(data.longitude)], 16);
+        }
+      }
+
+      // ---- Map interactions ----
+      // Draggable marker
+      marker.on("dragend", function () {
+        const latlng = marker.getLatLng();
+        writeInputsFromLatLng(latlng.lat, latlng.lng);
+        geofence.setLatLng(latlng);
+      });
+
+      // Click anywhere on the map
+      map.on("click", function (event) {
+        writeInputsFromLatLng(event.latlng.lat, event.latlng.lng);
+        applyPosition(event.latlng.lat, event.latlng.lng, false);
+      });
+
+      // Live input binding: latitude / longitude move the pin
+      latInput.addEventListener("input", function () {
+        applyPosition(readLatitude(), readLongitude(), true);
+      });
+
+      lngInput.addEventListener("input", function () {
+        applyPosition(readLatitude(), readLongitude(), true);
+      });
+
+      // Live input binding: radius rescales the geofence circle
+      radiusInput.addEventListener("input", function () {
+        applyRadius(readRadius());
+      });
+
+      // ---- "Use My Current GPS Location" ----
+      locateBtn.addEventListener("click", function () {
+        if (!navigator.geolocation) {
+          showToast("Geolocation is not supported by this browser.", "error");
+          return;
+        }
+
+        locateBtn.disabled = true;
+        locateBtn.classList.add("opacity-60", "cursor-wait");
+
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            locateBtn.disabled = false;
+            locateBtn.classList.remove("opacity-60", "cursor-wait");
+
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            writeInputsFromLatLng(lat, lng);
+            applyPosition(lat, lng, false);
+            map.setView([lat, lng], 17);
+            showToast("Map centered on your current GPS location.");
+          },
+          function (error) {
+            locateBtn.disabled = false;
+            locateBtn.classList.remove("opacity-60", "cursor-wait");
+            showToast("Could not get your location: " + error.message, "error");
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+
+      // ---- Campus selector: load that campus's saved settings ----
+      campusSelect.addEventListener("change", async function () {
+        const campusId = campusSelect.value;
+
+        try {
+          const response = await fetch(
+            "/api/admin/settings/" + encodeURIComponent(campusId)
+          );
+          const result = await response.json().catch(() => ({}));
+
+          if (!response.ok || result.status !== "success") {
+            throw new Error(result.message || "Could not load campus settings.");
+          }
+
+          populateForm(result.data, true);
+        } catch (error) {
+          showToast(error.message, "error");
+        }
+      });
+
+      // ---- QR poster refresh after a save ----
+      function showQr(qrCodeUrl, campusName) {
+        if (!qrCodeUrl) return;
+
+        document.getElementById("qrPrintImg").src = qrCodeUrl;
+        document.getElementById("qrDownloadLink").href = qrCodeUrl;
+
+        const nameEl = document.getElementById("qrCampusName");
+        if (nameEl && campusName) nameEl.textContent = campusName;
+
+        const section = document.getElementById("qrSection");
+        section.classList.remove("hidden");
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      // ---- Save (JSON API) ----
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const body = {
+          campus_id: Number(campusSelect.value),
+          late_cutoff_time: cutoffInput.value,
+          latitude: parseFloat(latInput.value),
+          longitude: parseFloat(lngInput.value),
+          radius_meters: parseInt(radiusInput.value, 10),
+        };
+
+        const originalButtonHtml = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        try {
+          const response = await fetch("/api/admin/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          const result = await response.json().catch(() => ({}));
+
+          if (!response.ok || result.status !== "success") {
+            throw new Error(result.message || "Could not save settings.");
+          }
+
+          showToast(result.message, "success");
+
+          if (result.data) {
+            populateForm(result.data, false);
+          }
+
+          showQr(result.qrCodeUrl, result.data && result.data.name);
+        } catch (error) {
+          showToast(error.message, "error");
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalButtonHtml;
+        }
+      });
+
+      // Initial paint (fixes floating-point display from DECIMAL columns)
+      lucide.createIcons();
+    })();
   </script>
 </body>
 </html>

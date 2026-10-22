@@ -49,16 +49,16 @@ const CAMPUS_SEEDS = [
   {
     name: "Main Campus",
     late_cutoff_time: "08:15:00",
-    school_lat: 11.5564,
-    school_lng: 104.9282,
-    gps_radius_meters: 50,
+    latitude: 11.5564,
+    longitude: 104.9282,
+    radius_meters: 50,
   },
   {
     name: "Second Campus",
     late_cutoff_time: "08:15:00",
-    school_lat: 11.56,
-    school_lng: 104.93,
-    gps_radius_meters: 50,
+    latitude: 11.56,
+    longitude: 104.93,
+    radius_meters: 50,
   },
 ];
 
@@ -138,14 +138,14 @@ async function seedCampuses(pool) {
     // INSERT IGNORE: never overwrites coordinates/cutoffs a developer already tuned.
     await pool.execute(
       `INSERT IGNORE INTO campuses
-         (name, late_cutoff_time, school_lat, school_lng, gps_radius_meters)
+         (name, late_cutoff_time, latitude, longitude, radius_meters)
        VALUES (?, ?, ?, ?, ?)`,
       [
         campus.name,
         campus.late_cutoff_time,
-        campus.school_lat,
-        campus.school_lng,
-        campus.gps_radius_meters,
+        campus.latitude,
+        campus.longitude,
+        campus.radius_meters,
       ],
     );
   }
