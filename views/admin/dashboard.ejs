@@ -496,10 +496,16 @@
             `of ${data.totalStaff} staff`;
 
           document.getElementById("lateNote").textContent =
-            `${pct(data.late, data.totalPresent)} of present`;
+            data.totalPresent > 0 ? `${pct(data.late, data.totalPresent)} of present` : "0% of present";
 
-          document.getElementById("absentNote").textContent =
-            `${pct(data.absent, data.totalStaff)} of staff`;
+          if (data.absentNote) {
+            document.getElementById("absentNote").textContent = data.absentNote;
+          } else if (data.isWorkingDay === false) {
+            document.getElementById("absentNote").textContent = "Non-working day";
+          } else {
+            document.getElementById("absentNote").textContent =
+              `${pct(data.absent, data.totalStaff)} of staff`;
+          }
 
           document.getElementById("flaggedNote").textContent =
             data.flaggedScans > 0 ? "Needs review" : "All clear";

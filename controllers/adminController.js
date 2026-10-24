@@ -33,7 +33,7 @@ async function getAttendanceSummary(req, res) {
             THEN 1
             ELSE 0
           END
-        ) AS absent,
+        ) AS absent_logs,
 
         SUM(
           CASE
@@ -55,15 +55,43 @@ async function getAttendanceSummary(req, res) {
       "SELECT COUNT(*) AS total_staff FROM teachers WHERE is_active = 1 AND role = 'staff'",
     );
 
+    const totalStaff = Number(staffRows[0].total_staff || 0);
+    const totalPresent = Number(summary.total_present || 0);
+    const late = Number(summary.late || 0);
+    const flaggedScans = Number(summary.flagged_scans || 0);
+
+    // Determine if today is a working day (Mon-Fri)
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 Sun, 1 Mon, ..., 6 Sat
+    const isWorkingDay = dayOfWeek >= 1 && dayOfWeek <= 5;
+
+    let todayAbsent = 0;
+    let absentNote = "";
+
+    if (!isWorkingDay) {
+      todayAbsent = 0;
+      absentNote = "Non-working day";
+    } else {
+      // On a working day, absent = total active staff - total present today
+      todayAbsent = Math.max(0, totalStaff - totalPresent);
+      if (totalStaff > 0) {
+        absentNote = `${Math.round((todayAbsent / totalStaff) * 1000) / 10}% of staff`;
+      } else {
+        absentNote = "0% of staff";
+      }
+    }
+
     return res.status(200).json({
       status: "success",
 
       data: {
-        totalPresent: Number(summary.total_present || 0),
-        late: Number(summary.late || 0),
-        absent: Number(summary.absent || 0),
-        flaggedScans: Number(summary.flagged_scans || 0),
-        totalStaff: Number(staffRows[0].total_staff || 0),
+        totalPresent,
+        late,
+        absent: todayAbsent,
+        absentNote,
+        isWorkingDay,
+        flaggedScans,
+        totalStaff,
       },
     });
   } catch (error) {
@@ -669,6 +697,9 @@ async function getReportsAnalytics(req, res) {
     // produced (weekdays x active staff).
     const expectedWorkingDays = workingDays * totalStaff;
 
+    // Fix: total absences = expected staff-days - total days present (up to today/elapsed)
+    const totalAbsencesCalculated = Math.max(0, expectedWorkingDays - totals.daysPresent);
+
     const analytics = {
       month,
       year,
@@ -680,7 +711,7 @@ async function getReportsAnalytics(req, res) {
       totalPresent: totals.daysPresent,
       totalOnTime: totals.daysOnTime,
       totalLate: totals.daysLate,
-      totalAbsent: totals.daysAbsent,
+      totalAbsent: totalAbsencesCalculated,
       totalScans,
       // Monthly attendance percentage
       attendanceRate: percentage(totals.daysPresent, expectedWorkingDays),
