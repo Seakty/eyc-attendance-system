@@ -8,6 +8,7 @@ const { isWithinGeofence } = require("../utils/geofence");
  */
 async function checkLocation(req, res) {
   const { lat, lng, campusId } = req.body;
+  const userId = req.user?.id;
 
   if (typeof lat !== "number" || typeof lng !== "number") {
     return res.status(400).json({
@@ -17,15 +18,49 @@ async function checkLocation(req, res) {
   }
 
   try {
-    // TODO: once auth middleware is wired up, derive campusId
-    // from the authenticated teacher instead of trusting
-    // the request body.
+    let resolvedCampusId = campusId || req.user?.campus_id;
+
+    if (!resolvedCampusId && userId) {
+      const [teacherRows] = await db.execute(
+        "SELECT campus_id FROM teachers WHERE id = ?",
+        [userId]
+      );
+      if (teacherRows.length > 0 && teacherRows[0].campus_id) {
+        resolvedCampusId = teacherRows[0].campus_id;
+      }
+    }
+
+    if (!resolvedCampusId) {
+      resolvedCampusId = 55;
+    }
+
     const [rows] = await db.execute(
-      "SELECT name, latitude, longitude, radius_meters FROM campuses WHERE id = ? AND is_active = TRUE",
-      [campusId || 1],
+      "SELECT id, name, latitude, longitude, radius_meters FROM campuses WHERE id = ? AND is_active = TRUE",
+      [resolvedCampusId],
     );
 
     if (rows.length === 0) {
+      const [allRows] = await db.execute(
+        "SELECT id, name, latitude, longitude, radius_meters FROM campuses WHERE is_active = TRUE ORDER BY id"
+      );
+      if (allRows.length > 0) {
+        const campus = allRows[0];
+        const result = isWithinGeofence(
+          lat,
+          lng,
+          parseFloat(campus.latitude),
+          parseFloat(campus.longitude),
+          campus.radius_meters,
+        );
+        return res.status(200).json({
+          status: "success",
+          campus: campus.name,
+          campusId: campus.id,
+          isInside: result.isInside,
+          distanceMeters: result.distanceMeters,
+          allowedRadiusMeters: campus.radius_meters,
+        });
+      }
       return res.status(404).json({
         status: "error",
         message: "Campus not found.",
@@ -174,9 +209,20 @@ async function scanAttendance(req, res) {
       // ==========================================
       // BUG FIX: Fetch live cutoff time from DB!
       // ==========================================
+      let qrCampusId = parsedQR.campusId || req.user?.campus_id;
+      if (!qrCampusId && userId) {
+        const [teacherRows] = await db.execute(
+          "SELECT campus_id FROM teachers WHERE id = ?",
+          [userId]
+        );
+        if (teacherRows.length > 0 && teacherRows[0].campus_id) {
+          qrCampusId = teacherRows[0].campus_id;
+        }
+      }
+      if (!qrCampusId) qrCampusId = 55;
       const [campusRows] = await db.execute(
         "SELECT late_cutoff_time FROM campuses WHERE id = ?",
-        [parsedQR.campusId || 1], // Fallback to 1 if campusId isn't in older QRs
+        [qrCampusId],
       );
 
       let cutoffTimeStr = "08:15:00";

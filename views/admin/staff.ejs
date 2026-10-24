@@ -333,12 +333,36 @@
             Position
           </label>
 
+          <select
+            id="editPositionSelect"
+            required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          >
+            <option value="" disabled>Select position</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Staff">Staff</option>
+            <option value="Other">Other</option>
+          </select>
+
           <input
             id="editPosition"
-            type="text"
+            type="hidden"
             required
-            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
           />
+
+          <div id="editPositionOtherWrapper" class="mt-3 hidden">
+            <label
+              class="block text-sm font-semibold text-slate-700 mb-1.5"
+            >
+              Specify Position
+            </label>
+            <input
+              id="editPositionOther"
+              type="text"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="e.g. IT Coordinator"
+            />
+          </div>
 
         </div>
 
@@ -909,8 +933,54 @@
       document.getElementById("editFullName").value =
         staff.full_name || "";
 
-      document.getElementById("editPosition").value =
-        staff.position || "";
+      const posSelect = document.getElementById("editPositionSelect");
+      const posHidden = document.getElementById("editPosition");
+      const posOther = document.getElementById("editPositionOther");
+      const posOtherWrap = document.getElementById("editPositionOtherWrapper");
+      const pos = staff.position || "";
+
+      if (pos === "Teacher") {
+        posSelect.value = "Teacher";
+        posOtherWrap.classList.add("hidden");
+        posOther.value = "";
+        posHidden.value = "Teacher";
+      } else if (pos === "Staff") {
+        posSelect.value = "Staff";
+        posOtherWrap.classList.add("hidden");
+        posOther.value = "";
+        posHidden.value = "Staff";
+      } else if (pos) {
+        posSelect.value = "Other";
+        posOtherWrap.classList.remove("hidden");
+        posOther.value = pos;
+        posHidden.value = pos;
+      } else {
+        posSelect.value = "";
+        posOtherWrap.classList.add("hidden");
+        posOther.value = "";
+        posHidden.value = "";
+      }
+
+      posSelect.onchange = function () {
+        if (this.value === "Other") {
+          posOtherWrap.classList.remove("hidden");
+          posOther.focus();
+          posHidden.value = posOther.value.trim();
+        } else if (this.value === "Teacher" || this.value === "Staff") {
+          posOtherWrap.classList.add("hidden");
+          posOther.value = "";
+          posHidden.value = this.value;
+        } else {
+          posOtherWrap.classList.add("hidden");
+          posOther.value = "";
+          posHidden.value = "";
+        }
+      };
+      posOther.oninput = function () {
+        if (posSelect.value === "Other") {
+          posHidden.value = this.value.trim();
+        }
+      };
 
       document.getElementById("editPhone").value =
         staff.phone || "";
@@ -977,13 +1047,22 @@
           document.getElementById("editStaffId").value;
 
 
+        const posSelect = document.getElementById("editPositionSelect");
+        const posHidden = document.getElementById("editPosition");
+        const posOther = document.getElementById("editPositionOther");
+        if (posSelect.value === "Other") {
+          posHidden.value = posOther.value.trim();
+        } else if (posSelect.value === "Teacher" || posSelect.value === "Staff") {
+          posHidden.value = posSelect.value;
+        }
+
         const body = {
 
           full_name:
             document.getElementById("editFullName").value.trim(),
 
           position:
-            document.getElementById("editPosition").value.trim(),
+            posHidden.value.trim(),
 
           campus_id:
             Number(document.getElementById("editCampus").value),
