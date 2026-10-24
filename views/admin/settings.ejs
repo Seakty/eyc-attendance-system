@@ -133,7 +133,7 @@
             </div>
           </div>
 
-          <form action="/admin/settings" method="POST" id="settingsForm" class="space-y-6">
+          <form action="/admin/settings" method="POST" id="settingsForm" data-ajax="true" class="space-y-6">
 
             <!-- Campus Selector -->
             <div>
@@ -255,9 +255,14 @@
             <button
               type="submit"
               id="saveBtn"
-              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition shadow-sm text-sm"
+              class="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition shadow-sm text-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Save Settings &amp; Generate QR Code
+              <span
+                id="saveSpinner"
+                class="hidden h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                aria-hidden="true"
+              ></span>
+              <span id="saveBtnLabel">Save Settings &amp; Generate QR Code</span>
             </button>
           </form>
         </div>
@@ -358,6 +363,17 @@
       const radiusInput = document.getElementById("radius_meters");
       const locateBtn = document.getElementById("locateBtn");
       const saveBtn = document.getElementById("saveBtn");
+      const saveSpinner = document.getElementById("saveSpinner");
+      const saveBtnLabel = document.getElementById("saveBtnLabel");
+
+      function setSaving(isSaving) {
+        saveBtn.disabled = isSaving;
+        saveBtn.setAttribute("aria-busy", String(isSaving));
+        saveSpinner.classList.toggle("hidden", !isSaving);
+        saveBtnLabel.textContent = isSaving
+          ? "Saving settings..."
+          : "Save Settings & Generate QR Code";
+      }
 
       // ---- Toast ----
       function showToast(message, type = "success") {
@@ -566,9 +582,7 @@
           radius_meters: parseInt(radiusInput.value, 10),
         };
 
-        const originalButtonHtml = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.textContent = "Saving...";
+        setSaving(true);
 
         try {
           const response = await fetch("/api/admin/settings", {
@@ -593,8 +607,7 @@
         } catch (error) {
           showToast(error.message, "error");
         } finally {
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = originalButtonHtml;
+          setSaving(false);
         }
       });
 

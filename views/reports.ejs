@@ -111,18 +111,27 @@
                   id="monthPicker"
                   name="month"
                   value="<%= month %>"
-                  onchange="this.form.submit()"
+                  onchange="this.form.requestSubmit()"
                   class="bg-transparent border-none outline-none text-sm font-medium text-slate-700 focus:ring-0 p-0"
                 />
               </form>
 
               <!-- ADM-04 Excel export, scoped to the selected month -->
               <a
+                id="exportBtn"
                 href="<%= exportUrl %>"
+                download
                 class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-3 rounded-xl transition shadow-sm text-sm flex items-center justify-center gap-2 whitespace-nowrap"
               >
-                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                Export Excel Report (.xlsx)
+                <span
+                  id="exportSpinner"
+                  class="hidden h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                  aria-hidden="true"
+                ></span>
+                <span id="exportIconWrap">
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                </span>
+                <span id="exportLabel">Export Excel Report (.xlsx)</span>
               </a>
             </div>
           </div>
@@ -480,6 +489,67 @@
     <script>
       // Activate Lucide icons
       lucide.createIcons();
+
+      // ==========================================
+      // Excel export loading feedback
+      // ==========================================
+      (function () {
+        const exportBtn = document.getElementById("exportBtn");
+        const exportSpinner = document.getElementById("exportSpinner");
+        const exportIconWrap = document.getElementById("exportIconWrap");
+        const exportLabel = document.getElementById("exportLabel");
+
+        if (!exportBtn) return;
+
+        let resetTimer = null;
+
+        function setExporting(isExporting) {
+          clearTimeout(resetTimer);
+
+          if (isExporting) {
+            exportBtn.dataset.exporting = "true";
+            exportBtn.setAttribute("aria-busy", "true");
+            exportBtn.classList.add(
+              "opacity-70",
+              "pointer-events-none",
+              "cursor-wait",
+            );
+            exportSpinner.classList.remove("hidden");
+            exportIconWrap.classList.add("hidden");
+            exportLabel.textContent = "Generating Excel...";
+
+            // The download never signals completion, so re-enable after a delay.
+            resetTimer = setTimeout(() => setExporting(false), 8000);
+          } else {
+            delete exportBtn.dataset.exporting;
+            exportBtn.removeAttribute("aria-busy");
+            exportBtn.classList.remove(
+              "opacity-70",
+              "pointer-events-none",
+              "cursor-wait",
+            );
+            exportSpinner.classList.add("hidden");
+            exportIconWrap.classList.remove("hidden");
+            exportLabel.textContent = "Export Excel Report (.xlsx)";
+          }
+        }
+
+        exportBtn.addEventListener("click", function (event) {
+          if (exportBtn.dataset.exporting === "true") {
+            event.preventDefault();
+            return;
+          }
+
+          setExporting(true);
+        });
+
+        // Returning to the tab usually means the download prompt is done.
+        window.addEventListener("focus", function () {
+          if (exportBtn.dataset.exporting === "true") {
+            resetTimer = setTimeout(() => setExporting(false), 800);
+          }
+        });
+      })();
 
       // ==========================================
       // Chart data (server computed, injected as JSON)

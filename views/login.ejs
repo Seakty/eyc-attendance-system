@@ -144,9 +144,14 @@
           <button
             type="submit"
             id="submitBtn"
-            class="w-full bg-calmblue hover:bg-navy text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full bg-calmblue hover:bg-navy text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
           >
-            <span id="submitText"> Login </span>
+            <span
+              id="submitSpinner"
+              class="hidden h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+              aria-hidden="true"
+            ></span>
+            <span id="submitText">Login</span>
           </button>
 
           <!-- Register Link -->
@@ -173,7 +178,17 @@
         const form = document.getElementById("loginForm");
         const submitBtn = document.getElementById("submitBtn");
         const submitText = document.getElementById("submitText");
+        const submitSpinner = document.getElementById("submitSpinner");
         const formError = document.getElementById("formError");
+
+        function setSubmitting(isSubmitting) {
+          submitBtn.disabled = isSubmitting;
+          submitBtn.setAttribute("aria-busy", String(isSubmitting));
+          submitSpinner.classList.toggle("hidden", !isSubmitting);
+          submitText.textContent = isSubmitting
+            ? "Verifying credentials..."
+            : "Login";
+        }
 
         // Cambodian phone number format
         const PHONE_REGEX = /^(?:\+855|0)[1-9]\d{7,8}$/;
@@ -253,9 +268,7 @@
             password: fields.password.value,
           };
 
-          submitBtn.disabled = true;
-
-          submitText.textContent = "Logging in...";
+          setSubmitting(true);
 
           try {
             const res = await fetch("/api/auth/login", {
@@ -294,9 +307,7 @@
 
             formError.classList.add("show");
           } finally {
-            submitBtn.disabled = false;
-
-            submitText.textContent = "Login";
+            setSubmitting(false);
           }
         });
       })();

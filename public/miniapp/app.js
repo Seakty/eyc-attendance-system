@@ -15,6 +15,20 @@ let qrScannerStarted = false;
 let currentPhoneLat = null;
 let currentPhoneLng = null;
 
+// ---------- App initialization splash ----------
+const appLoader = document.getElementById("appLoader");
+let appLoaderHidden = false;
+
+function hideAppLoader() {
+  if (!appLoader || appLoaderHidden) return;
+  appLoaderHidden = true;
+  appLoader.classList.add("is-hidden");
+  appLoader.setAttribute("aria-hidden", "true");
+}
+
+// Safety net: never trap staff behind the splash if the network hangs.
+setTimeout(hideAppLoader, 10000);
+
 if (!token) {
   // If no token exists, kick them back to the login page
   window.location.href = "/login";
@@ -763,33 +777,42 @@ logoutBtn.addEventListener("click", () => {
 window.addEventListener("DOMContentLoaded", async () => {
   const savedUser = localStorage.getItem("eyc_user");
   if (savedUser) {
-    const user = JSON.parse(savedUser);
+    try {
+      const user = JSON.parse(savedUser);
 
-    // Populate the top header card (Note: using user.fullName or user.name based on your login response)
-    const displayName = user.fullName || user.name;
+      // Populate the top header card (Note: using user.fullName or user.name based on your login response)
+      const displayName = user.fullName || user.name;
 
-    // Combine Position and Campus Name (e.g., "Teacher · Youth School")
-    const campusName = user.campusName || "Main Campus";
-    const positionStr = user.position || "Teacher";
-    const fullRoleSubtitle = `${positionStr} · ${campusName}`;
+      // Combine Position and Campus Name (e.g., "Teacher · Youth School")
+      const campusName = user.campusName || "Main Campus";
+      const positionStr = user.position || "Teacher";
+      const fullRoleSubtitle = `${positionStr} · ${campusName}`;
 
-    const nameDisplay = document.getElementById("staffName");
-    const roleDisplay = document.getElementById("staffRole");
+      const nameDisplay = document.getElementById("staffName");
+      const roleDisplay = document.getElementById("staffRole");
 
-    if (nameDisplay) nameDisplay.textContent = displayName;
-    if (roleDisplay) roleDisplay.textContent = fullRoleSubtitle;
+      if (nameDisplay) nameDisplay.textContent = displayName;
+      if (roleDisplay) roleDisplay.textContent = fullRoleSubtitle;
 
-    // Populate the floating profile popover
-    const popName = document.getElementById("popoverName");
-    const popRole = document.getElementById("popoverRole");
-    const popPhone = document.getElementById("popoverPhone");
+      // Populate the floating profile popover
+      const popName = document.getElementById("popoverName");
+      const popRole = document.getElementById("popoverRole");
+      const popPhone = document.getElementById("popoverPhone");
 
-    if (popName) popName.textContent = displayName;
-    if (popRole) popRole.textContent = user.position;
-    if (popPhone) popPhone.textContent = user.phone;
+      if (popName) popName.textContent = displayName;
+      if (popRole) popRole.textContent = user.position;
+      if (popPhone) popPhone.textContent = user.phone;
+    } catch (err) {
+      console.warn("Could not read cached user profile:", err);
+      localStorage.removeItem("eyc_user");
+    }
   }
 
-  if (!token) return;
+  if (!token) {
+    // Auth verification cannot succeed without a stored token.
+    hideAppLoader();
+    return;
+  }
 
   try {
     const res = await fetch("/api/attendance/today", {
@@ -840,5 +863,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (err) {
     console.error("Failed to load initial attendance state:", err);
+  } finally {
+    hideAppLoader();
   }
 });

@@ -18,6 +18,16 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Branded splash shown while the stored session is verified -->
+    <div id="appLoader" class="app-loader" role="status" aria-live="polite">
+      <div class="app-loader-inner">
+        <img src="/images/eyc-logo.png" alt="EYC logo" class="app-loader-logo" />
+        <p class="app-loader-title">EYC Attendance</p>
+        <p class="app-loader-subtitle">Verifying your session...</p>
+        <span class="app-loader-spinner" aria-hidden="true"></span>
+      </div>
+    </div>
+
     <div class="app">
       <div class="brand">
         <img src="/images/eyc-logo.png" alt="EYC logo" class="logo" />
