@@ -28,10 +28,13 @@ router.get("/login", (req, res) => {
 
 router.get("/register", async (req, res) => {
   try {
-    const [campuses] = await db.execute("SELECT id, name FROM campuses");
+    const [campuses] = await db.execute(
+      "SELECT id, name FROM campuses WHERE is_active = TRUE ORDER BY name ASC"
+    );
 
     res.render("register", {
       campuses: campuses,
+      schools: campuses,
     });
   } catch (error) {
     console.error("Failed to load campuses:", error);

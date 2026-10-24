@@ -123,21 +123,50 @@
         <!-- Position -->
         <div>
           <label
-            for="position"
+            for="positionSelect"
             class="block text-sm font-medium text-navy mb-1"
           >
             Position <span class="text-accentCoral">*</span>
           </label>
 
+          <select
+            id="positionSelect"
+            required
+            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy bg-white focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+          >
+            <option value="" disabled selected>Select position</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Staff">Staff</option>
+            <option value="Other">Other</option>
+          </select>
+
           <input
-            type="text"
+            type="hidden"
             id="position"
             name="position"
-            autocomplete="organization-title"
             required
-            class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
-            placeholder="e.g. Teacher, Admin Staff"
           />
+
+          <div id="positionOtherWrapper" class="mt-3 hidden">
+            <label
+              for="positionOther"
+              class="block text-sm font-medium text-navy mb-1"
+            >
+              Specify Position <span class="text-accentCoral">*</span>
+            </label>
+            <input
+              type="text"
+              id="positionOther"
+              class="w-full rounded-lg border border-iceblue px-4 py-2.5 text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-calmblue focus:border-calmblue transition"
+              placeholder="e.g. IT Coordinator"
+            />
+            <p
+              class="field-error text-accentCoral text-xs mt-1"
+              data-error-for="positionOther"
+            >
+              Please specify the position.
+            </p>
+          </div>
 
           <p
             class="field-error text-accentCoral text-xs mt-1"
@@ -319,6 +348,9 @@
       const fields = {
         fullName: document.getElementById("fullName"),
         position: document.getElementById("position"),
+        positionSelect: document.getElementById("positionSelect"),
+        positionOther: document.getElementById("positionOther"),
+        positionOtherWrapper: document.getElementById("positionOtherWrapper"),
         campus: document.getElementById("campus"),
         phone: document.getElementById("phone"),
         password: document.getElementById("password"),
@@ -343,6 +375,44 @@
         formSuccess.classList.remove("show");
       }
 
+      function syncPosition() {
+        const selectVal = fields.positionSelect.value;
+        if (selectVal === "Other") {
+          fields.positionOtherWrapper.classList.remove("hidden");
+          fields.positionOther.required = true;
+        } else {
+          fields.positionOtherWrapper.classList.add("hidden");
+          fields.positionOther.required = false;
+          fields.positionOther.value = "";
+          const msg = form.querySelector('[data-error-for="positionOther"]');
+          if (msg) msg.classList.remove("show");
+          fields.positionOther.classList.remove("invalid");
+        }
+
+        if (selectVal === "Teacher" || selectVal === "Staff") {
+          fields.position.value = selectVal;
+        } else if (selectVal === "Other") {
+          fields.position.value = fields.positionOther.value.trim();
+        } else {
+          fields.position.value = "";
+        }
+      }
+
+      if (fields.positionSelect) {
+        fields.positionSelect.addEventListener("change", function () {
+          hideBanners();
+          syncPosition();
+          validate();
+        });
+      }
+      if (fields.positionOther) {
+        fields.positionOther.addEventListener("input", function () {
+          hideBanners();
+          syncPosition();
+          validate();
+        });
+      }
+
       function validate() {
         let valid = true;
 
@@ -353,11 +423,25 @@
           setFieldError("fullName", false);
         }
 
-        if (!fields.position.value.trim()) {
+        syncPosition();
+        if (fields.positionSelect.value === "Other") {
+          if (!fields.positionOther.value.trim()) {
+            const msg = form.querySelector('[data-error-for="positionOther"]');
+            if (msg) msg.classList.add("show");
+            fields.positionOther.classList.add("invalid");
+            setFieldError("position", true);
+            valid = false;
+          } else {
+            const msg = form.querySelector('[data-error-for="positionOther"]');
+            if (msg) msg.classList.remove("show");
+            fields.positionOther.classList.remove("invalid");
+            setFieldError("position", false);
+          }
+        } else if (fields.positionSelect.value === "Teacher" || fields.positionSelect.value === "Staff") {
+          setFieldError("position", false);
+        } else {
           setFieldError("position", true);
           valid = false;
-        } else {
-          setFieldError("position", false);
         }
 
         if (!fields.campus.value) {
@@ -397,12 +481,20 @@
       }
 
       // Re-validate a field as the user fixes it
-      Object.keys(fields).forEach((key) => {
-        fields[key].addEventListener("input", () => {
+      ["fullName", "campus", "phone", "password", "confirmPassword"].forEach((key) => {
+        if (fields[key]) {
+          fields[key].addEventListener("input", () => {
+            hideBanners();
+            validate();
+          });
+        }
+      });
+      if (fields.campus) {
+        fields.campus.addEventListener("change", () => {
           hideBanners();
           validate();
         });
-      });
+      }
 
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -410,6 +502,7 @@
 
         if (!validate()) return;
 
+        syncPosition();
         const payload = {
           fullName: fields.fullName.value.trim(),
           position: fields.position.value.trim(),

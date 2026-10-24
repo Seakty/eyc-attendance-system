@@ -47,17 +47,24 @@ const STAFF_PASSWORD = process.env.SEED_STAFF_PASSWORD || "Staff@123";
 
 const CAMPUS_SEEDS = [
   {
-    name: "Main Campus",
+    name: "Aziza School",
     late_cutoff_time: "08:15:00",
     latitude: 11.5564,
     longitude: 104.9282,
     radius_meters: 50,
   },
   {
-    name: "Second Campus",
+    name: "Lakeside School",
     late_cutoff_time: "08:15:00",
     latitude: 11.56,
     longitude: 104.93,
+    radius_meters: 50,
+  },
+  {
+    name: "Youth School",
+    late_cutoff_time: "08:15:00",
+    latitude: 11.5564,
+    longitude: 104.9282,
     radius_meters: 50,
   },
 ];
@@ -68,7 +75,7 @@ const TEACHER_SEEDS = [
     position: "System Administrator",
     phone: ADMIN_PHONE,
     role: "admin",
-    campus: "Main Campus",
+    campus: "Aziza School",
     password: ADMIN_PASSWORD,
   },
   {
@@ -76,7 +83,7 @@ const TEACHER_SEEDS = [
     position: "English Teacher",
     phone: "0999999991",
     role: "staff",
-    campus: "Main Campus",
+    campus: "Aziza School",
     password: STAFF_PASSWORD,
   },
   {
@@ -84,7 +91,7 @@ const TEACHER_SEEDS = [
     position: "Mathematics Teacher",
     phone: "0999999992",
     role: "staff",
-    campus: "Main Campus",
+    campus: "Aziza School",
     password: STAFF_PASSWORD,
   },
   {
@@ -92,7 +99,7 @@ const TEACHER_SEEDS = [
     position: "Science Teacher",
     phone: "0999999993",
     role: "staff",
-    campus: "Second Campus",
+    campus: "Lakeside School",
     password: STAFF_PASSWORD,
   },
   {
@@ -100,7 +107,7 @@ const TEACHER_SEEDS = [
     position: "Khmer Teacher",
     phone: "0999999994",
     role: "staff",
-    campus: "Second Campus",
+    campus: "Lakeside School",
     password: STAFF_PASSWORD,
   },
 ];

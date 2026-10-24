@@ -8,7 +8,7 @@ const requireAuth = require("../middleware/requireAuth");
 console.log("Attendance Controller:", attendanceController);
 
 // POST /api/attendance/check-location
-router.post("/check-location", attendanceController.checkLocation);
+router.post("/check-location", requireAuth, attendanceController.checkLocation);
 // POST /api/attendance/scan
 router.post("/scan", requireAuth, attendanceController.scanAttendance);
 // GET /api/attendance/test-geofence

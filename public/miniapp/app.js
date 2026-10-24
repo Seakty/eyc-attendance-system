@@ -150,9 +150,10 @@ async function sendLocationToServer(lat, lng) {
   currentPhoneLat = lat;
   currentPhoneLng = lng;
 
+  const authToken = localStorage.getItem("eyc_auth_token") || token;
   const res = await fetch("/api/attendance/check-location", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
     body: JSON.stringify({ lat, lng }),
   });
 
@@ -226,11 +227,12 @@ async function scanQrToken(decodedText) {
       qrScannerStarted = false;
     }
 
+    const authToken = localStorage.getItem("eyc_auth_token") || token;
     const response = await fetch("/api/attendance/scan", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("eyc_auth_token")}`,
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify({
         qrToken: decodedText,
@@ -511,11 +513,12 @@ async function loadHistory(date) {
   const month = date.getMonth() + 1;
 
   try {
+    const authToken = localStorage.getItem("eyc_auth_token") || token;
     const res = await fetch(
       `/api/attendance/my-history?year=${year}&month=${month}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`, // <--- ADD THIS LINE
+          Authorization: `Bearer ${authToken}`, // <--- ADD THIS LINE
         },
       },
     );
@@ -815,8 +818,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
+    const authToken = localStorage.getItem("eyc_auth_token") || token;
     const res = await fetch("/api/attendance/today", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${authToken}` },
     });
 
     // If the endpoint isn't live yet or fails, fail gracefully

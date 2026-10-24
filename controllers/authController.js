@@ -5,6 +5,7 @@ const pool = require("../config/database");
 // 1. Register API (POST /api/auth/register)
 exports.register = async (req, res) => {
   const { fullName, position, campus_id, phone, password } = req.body;
+  const campusId = campus_id;
 
   try {
     // ឆែកមើលលេខទូរស័ព្ទក្នុងតារាង teachers ជាមួយ MySQL syntax
@@ -24,10 +25,10 @@ exports.register = async (req, res) => {
     // Insert ចូលតារាង teachers ដោយប្រើ password_hash និង campus_id
     const [result] = await pool.execute(
       "INSERT INTO teachers (full_name, position, campus_id, phone, password_hash) VALUES (?, ?, ?, ?, ?)",
-      [fullName, position, campus_id, phone, hashedPassword],
+      [fullName, position, campusId, phone, hashedPassword],
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Registration successful",
       userId: result.insertId,
     });
