@@ -41,6 +41,86 @@ button {
   padding: 40px 20px 24px;
 }
 
+/* ---------- App initialization splash ---------- */
+.app-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f9f7f6;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+.app-loader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.app-loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.app-loader-logo {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  animation: appLoaderPulse 1.8s ease-in-out infinite;
+}
+
+.app-loader-title {
+  margin-top: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #112d4e;
+}
+
+.app-loader-subtitle {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #7c8a9c;
+}
+
+.app-loader-spinner {
+  margin-top: 20px;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #dbe2ef;
+  border-top-color: #3f72af;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes appLoaderPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.94);
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loader-logo,
+  .app-loader-spinner {
+    animation-duration: 2.5s;
+  }
+}
+
 /* ---------- Brand header ---------- */
 .brand {
   text-align: center;
